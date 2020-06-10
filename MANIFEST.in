@@ -1,1 +1,1 @@
-recursive-include ct_database *
+recursive-include pispec/ct_database *
