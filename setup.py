@@ -11,7 +11,7 @@ setup(
     url = 'https://github.com/borisbolliet/pi_spec',
     download_url = 'https://github.com/borisbolliet/pi_spec/archive/master.zip',
     package_data={
-        "pispec": ["ct_database/*"]
+        "pispec": ["ct_database/case_1_040520/*txt"]
     },
     include_package_data=True
 
