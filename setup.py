@@ -13,5 +13,6 @@ setup(
     package_data={
         "pispec": ["ct_database/*"]
     },
+    include_package_data=True
 
 )
