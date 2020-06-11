@@ -139,10 +139,10 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked):
     S_gamma_high_xinj_low = S[2]
     S_gamma_high_xinj_high = S[3]
 
-    F_gamma_low_xinj_low = F[0]
-    F_gamma_low_xinj_high = F[1]
-    F_gamma_high_xinj_low = F[2]
-    F_gamma_high_xinj_high = F[3]
+    F_gamma_low_xinj_low = F[0][0]
+    F_gamma_low_xinj_high = F[1][0]
+    F_gamma_high_xinj_low = F[2][0]
+    F_gamma_high_xinj_high = F[3][0]
 
     Gamma_asked = Gamma_inj_asked
     xinj_asked = x_inj_asked
@@ -163,7 +163,8 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked):
     new_S_gamma_low = f_gamma_low(new_x_array)
     new_S_gamma_high = f_gamma_high(new_x_array)
 
-    w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+    #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+    w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
     new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
 
 
@@ -187,7 +188,8 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked):
     new_S_gamma_low = f_gamma_low(new_x_array)
     new_S_gamma_high = f_gamma_high(new_x_array)
 
-    w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+    #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+    w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
     new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
 
     S_gamma_asked_xinj_high = [[],[]]
@@ -208,7 +210,8 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked):
     new_S_xinj_low = f_xinj_low(new_x_array)
     new_S_xinj_high = f_xinj_high(new_x_array)
 
-    w = (xinj_high - xinj_asked)/(xinj_high - xinj_low)
+    #w = (xinj_high - xinj_asked)/(xinj_high - xinj_low)
+    w = (np.log(xinj_high) - np.log(xinj_asked))/(np.log(xinj_high) - np.log(xinj_low))
     new_S_xinj_asked = w*new_S_xinj_low + (1.-w)*new_S_xinj_high
 
     S_gamma_asked_xinj_asked = [[],[]]
