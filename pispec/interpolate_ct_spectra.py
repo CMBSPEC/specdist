@@ -9,7 +9,7 @@ case_id = "case_1_040520"
 
 # this_dir, this_filename = os.path.split(__file__)
 # DATA_PATH = os.path.join(this_dir, "data", "data.txt")
-path_to_spectra = resource_filename("pispec","ct_database/"+case_id)
+path_to_spectra = resource_filename("pispec","data/ct_database/"+case_id)
 print(path_to_spectra)
 
 Gamma_inj_min = 1e-17

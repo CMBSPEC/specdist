@@ -1,5 +1,8 @@
 from setuptools import setup
 
+
+
+
 setup(
     name="pispec",
     version="0.0",
@@ -11,7 +14,9 @@ setup(
     url = 'https://github.com/borisbolliet/pi_spec',
     download_url = 'https://github.com/borisbolliet/pi_spec/archive/master.zip',
     package_data={
-        "pispec": ["ct_database/case_1_040520/*txt"]
+        "pispec": ["data/*txt"],
+        #"data/ct_database/case_1_040520/*txt"]#,
+        #"pispec": ["data/*txt"]
     },
 
 
