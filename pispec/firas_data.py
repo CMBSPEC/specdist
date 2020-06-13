@@ -1,5 +1,3 @@
-import numpy as np
-from pkg_resources import resource_filename
 from .utils import *
 
 #D = np.loadtxt(self.firas_data_file)

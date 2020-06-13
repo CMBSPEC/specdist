@@ -5,3 +5,7 @@ based on Jens Chluba CosmoTherm computation
 
 
 User dependent path have to be set in pispec/config.py.
+
+
+cosmotherm comments:
+* redshift dependent functions requiring PDE solver in output_fz_functions(), inside Solve_PDE.cpp.
