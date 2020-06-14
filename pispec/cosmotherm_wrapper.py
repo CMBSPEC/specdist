@@ -14,6 +14,11 @@ class cosmotherm:
     ct_pi_redshift_evolution_mode = 0
     ct_include_pi = 1 #photon injection case
 
+    ct_Omega_m = 0.26
+    ct_Omega_b = 0.044
+    ct_T0 = 2.726
+    ct_h = 0.71
+
     path_to_ct_param_file = path_to_cosmotherm + '/runfiles/'
 
     def __init__(self):
@@ -71,6 +76,7 @@ class cosmotherm:
         fn=functools.partial(self.compute_specdist_parallel,param_values_array=args['param_values_array'],param_name=args['param_name'])
         #print(len(*param_values_array))
         results = pool.map(fn,range(len(args['param_values_array'])))
+        pool.close()
         return results
 
 

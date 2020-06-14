@@ -1,16 +1,8 @@
 from .utils import *
-from pkg_resources import resource_filename
-import numpy as np
-import re
-from scipy.interpolate import interp1d
-import os
 
 
 
 
-
-def rho_gamma_in_GeV_per_cm3(T):
-    return 8.*np.pi**5.*(kb*T)**4/15./clight**3./hplanck**3./GeV_over_kg*1e-6/clight**2
 
 #Black body spectrum (in MJy/sr)
 def B_nu_of_T(NU,T):
