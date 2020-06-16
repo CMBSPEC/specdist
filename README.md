@@ -1,8 +1,6 @@
-this is the first version of pispec
-a python module to compute photon injection spectra at any x_inj.Gamma_inj
-based on Jens Chluba CosmoTherm computation
+Python package for spectral distortions
 
-
+Based one codes initially developed by Jens Chluba and Boris Bolliet, Luke Hart, Andrea Ravenni, Aditya Rotti at The University of Manchester. 
 
 User dependent path have to be set in pispec/config.py.
 
