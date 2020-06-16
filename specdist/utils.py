@@ -7,6 +7,7 @@ from pkg_resources import resource_filename
 import os
 from scipy import optimize
 from scipy.integrate import quad
+import math
 
 
 def find_nearests(array, value):
@@ -19,6 +20,8 @@ def find_nearests(array, value):
         idxm = idx
         idxp = idx+1
     return (idxm,idxp)
+
+
 
 
 #1 GeV/c2 = 1.78266192×10−27 kg
@@ -41,7 +44,10 @@ x_21_cm = hplanck*nu_21_cm_in_GHz/kb/firas_T0_bf*1.e9
 
 kappa_c = 2.1419 # 4M_2-3M_c see below eq. 9b of https://arxiv.org/pdf/1506.06582.pdf
 
+beta_mu = 2.1923
 
+G1 = np.pi**2./6
 G2 = 2.4041
 G3 = np.pi**4/15.
 a_rho = G2/G3
+alpha_mu = 2.*G1/3./G2
