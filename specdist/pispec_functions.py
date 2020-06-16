@@ -45,7 +45,7 @@ def dmu_dt_continuous_injection(zi,cosmo,**kwargs):
     X_dm = kwargs['dm_particle']
     x_0 = 4./3./a_rho
     x_i = x_inj(X_dm,0.)
-    DN_N = pi_entropy_production_history_dlN_dt(z,cosmo,**kwargs)
+    DN_N = pi_entropy_production_history_dlnN_dt(zi,cosmo,**kwargs)
     x_c = critical_frequency_x_c(zi)
     P_s = np.exp(-x_c/x_i)
 
@@ -126,7 +126,7 @@ def get_fdm_from_Drho_rho_tot(Drho_rho_tot,cosmo,cosmotherm,dm_particle):
 
 
 
-def pi_entropy_production_history_dlN_dt(z,cosmo,**kwargs):
+def pi_entropy_production_history_dlnN_dt(z,cosmo,**kwargs):
     ct = kwargs['cosmotherm']
     X_dm = kwargs['dm_particle']
     delta_t = cosmo.t_of_z_in_s(z)['value'] - cosmo.t_of_z_in_s(cosmo.z_start)['value']

@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name="specdist",
-    version="0.0",
+    version="0.1",
     description="Python package for spectral distortions",
     zip_safe=False,
     packages=["specdist"],
