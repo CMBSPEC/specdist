@@ -3,7 +3,7 @@ from .utils import *
 #D = np.loadtxt(self.firas_data_file)
 
 class firas:
-    firas_data_file = resource_filename("pispec","data/firas_monopole_spec_v1.txt")
+    firas_data_file = resource_filename("specdist","data/firas_monopole_spec_v1.txt")
 
 
     firas_x = np.array([], 'float64')

@@ -27,6 +27,11 @@ class cosmo:
         # print(a,b,kb,hplanck,clight,self.H0())
         return  a/b*(1.0+self.N_eff*(7.0/8.0)*np.power(4.0/11.0, 4.0/3.0))
 
+    def omega_m(self):
+        return self.Omega_m()*self.h**2
+    def omega_rel(self):
+        return self.Omega_rel()*self.h**2
+
     def z_eq(self):
         return self.Omega_m()/self.Omega_rel()-1.
 

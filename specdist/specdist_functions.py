@@ -20,13 +20,17 @@ def visibility_J_bb_star(z,cosmo):
     return 0.983*np.exp(-(z/redshift_z_mu(cosmo))**(5./2.))*(1.-0.0381*(z/redshift_z_mu(cosmo))**2.29)
 
 def visibility_J_y(z,cosmo):
-    #see eq. 3.4 of https://arxiv.org/pdf/1610.10051.pdf
+    #see eq. 4.49 of https://physique.cuso.ch/fileadmin/physique/document/2014_Chluba_notes.pdf
     z = np.asarray(z)
     return (1.+((1.+z)/6e4)**2.58)**-1.
 
 def visibility_J_mu(z,cosmo):
-    #see eq. 3.4 of https://arxiv.org/pdf/1610.10051.pdf
+    #see eq. 4.49 of https://physique.cuso.ch/fileadmin/physique/document/2014_Chluba_notes.pdf
     return 1.-visibility_J_y(z,cosmo)
+
+def visibility_J_T(z,cosmo):
+    #see eq. 4.49 of https://physique.cuso.ch/fileadmin/physique/document/2014_Chluba_notes.pdf
+    return 1.-visibility_J_mu(z,cosmo)
 
 
 def critical_frequency_x_c_br(z):
