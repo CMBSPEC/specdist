@@ -7,6 +7,7 @@ from pkg_resources import resource_filename
 import os
 from scipy import optimize
 from scipy.integrate import quad
+from scipy.interpolate import interp1d
 import math
 
 

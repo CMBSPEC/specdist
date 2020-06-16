@@ -1,107 +1,128 @@
-from .utils import find_nearests
-from pkg_resources import resource_filename
-import numpy as np
-import re
-from scipy.interpolate import interp1d
-import os
-
-case_id = "case_1_040520"
-
-# this_dir, this_filename = os.path.split(__file__)
-# DATA_PATH = os.path.join(this_dir, "data", "data.txt")
-path_to_spectra = resource_filename("specdist","data/ct_database/"+case_id)
-print(path_to_spectra)
-
-Gamma_inj_min = 1e-17
-Gamma_inj_max = 1e-8
-N_Gamma_inj = 50
-Gamma_values = np.logspace(np.log10(Gamma_inj_min),np.log10(Gamma_inj_max),N_Gamma_inj)
-
-x_inj_min = 1e-6
-x_inj_max = 1e6
-N_x_inj = 200
-x_inj_values = np.logspace(np.log10(x_inj_min),np.log10(x_inj_max),N_x_inj)
+from .utils import *
+from .config import *
+# from pkg_resources import resource_filename
+# import numpy as np
+# import re
+# from scipy.interpolate import interp1d
+# import os
 
 
-X_2d = []
-DI_2d = []
-finj_2d = []
+class specdist_ct_spectra_lib:
+    case_id = "case_1_040520"
 
-for id_Gamma in range(N_Gamma_inj):
-# for id_Gamma in range(1):
-    Gi = Gamma_values[id_Gamma]
-    str_gamma = str("%.3e"%Gi)
+    # this_dir, this_filename = os.path.split(__file__)
+    # DATA_PATH = os.path.join(this_dir, "data", "data.txt")
+    # path_to_spectra = resource_filename("specdist","data/ct_database/"+case_id)
+    # print(path_to_spectra)
+    path_to_spectra = ""
 
-    #read x array
-    x_ct = []
-    filename = path_to_spectra + '/spectra_' + case_id + '_G_' + str_gamma + '_x_ct.txt'
-    with open(filename) as f:
-        for line in f:
-            ls = line.strip()
-            if ls:
-                if "#" in ls:
-                    continue
-                else:
-                    x_ct_p = []
-                    l = re.split('\t',ls)
-                    l = [e for e in l if e]
-                    #print(l)
-                    for s in l:
-                        x_cti = float(s)
-                        x_ct_p.append(x_cti)
-                    x_ct_p = np.asarray(x_ct_p)
-                x_ct.append(x_ct_p)
+    Gamma_inj_min = 1e-17
+    Gamma_inj_max = 1e-8
+    N_Gamma_inj = 50
+    Gamma_values = np.logspace(np.log10(Gamma_inj_min),np.log10(Gamma_inj_max),N_Gamma_inj)
+
+    x_inj_min = 1e-6
+    x_inj_max = 1e6
+    N_x_inj = 200
+    x_inj_values = np.logspace(np.log10(x_inj_min),np.log10(x_inj_max),N_x_inj)
 
 
-    #read DI array
-    DI_ct = []
-    filename = path_to_spectra + '/spectra_' + case_id + '_G_' + str_gamma + '_DI_ct.txt'
-    with open(filename) as f:
-        for line in f:
-            ls = line.strip()
-            if ls:
-                if "#" in ls:
-                    continue
-                else:
-                    DI_ct_p = []
-                    l = re.split('\t',ls)
-                    l = [e for e in l if e]
-                    #print(l)
-                    for s in l:
-                        DI_cti = float(s)
-                        DI_ct_p.append(DI_cti)
-                    DI_ct_p = np.asarray(DI_ct_p)
-                DI_ct.append(DI_ct_p*1e-6)
+    X_2d = []
+    DI_2d = []
+    finj_2d = []
 
 
 
-    finj_ct = []
-    filename = path_to_spectra + '/spectra_' + case_id + '_G_' + str_gamma + '_finj_ct.txt'
-    with open(filename) as f:
-        for line in f:
-            ls = line.strip()
-            if ls:
-                if "#" in ls:
-                    continue
-                else:
-                    finj_ct_p = []
-                    l = re.split('\t',ls)
-                    l = [e for e in l if e]
-                    #print(l)
-                    for s in l:
-                        finj_cti = float(s)
-                        finj_ct_p.append(finj_cti)
-                finj_ct.append(finj_ct_p)
+def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
+    if case == 'bare':
+        specdist_ct_spectra_lib.case_id = "case_1_040520"
+    elif case == 'lyc':
+        specdist_ct_spectra_lib.case_id = "case_1_040520"
+    else:
+        print('this case has not been computed. Computed cases are "lyc" or "bare".')
+        return
+    specdist_ct_spectra_lib.path_to_spectra  = path_to_ct_database + specdist_ct_spectra_lib.case_id
 
-    X_2d.append(x_ct)
-    DI_2d.append(DI_ct)
-    finj_2d.append(finj_ct)
+    for id_Gamma in range(specdist_ct_spectra_lib.N_Gamma_inj):
+    # for id_Gamma in range(1):
+        Gi = specdist_ct_spectra_lib.Gamma_values[id_Gamma]
+        str_gamma = str("%.3e"%Gi)
+
+        #read x array
+        x_ct = []
+        filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_x_ct.txt'
+        with open(filename) as f:
+            for line in f:
+                ls = line.strip()
+                if ls:
+                    if "#" in ls:
+                        continue
+                    else:
+                        x_ct_p = []
+                        l = re.split('\t',ls)
+                        l = [e for e in l if e]
+                        #print(l)
+                        for s in l:
+                            x_cti = float(s)
+                            x_ct_p.append(x_cti)
+                        x_ct_p = np.asarray(x_ct_p)
+                    x_ct.append(x_ct_p)
+
+
+        #read DI array
+        DI_ct = []
+        filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_DI_ct.txt'
+        with open(filename) as f:
+            for line in f:
+                ls = line.strip()
+                if ls:
+                    if "#" in ls:
+                        continue
+                    else:
+                        DI_ct_p = []
+                        l = re.split('\t',ls)
+                        l = [e for e in l if e]
+                        #print(l)
+                        for s in l:
+                            DI_cti = float(s)
+                            DI_ct_p.append(DI_cti)
+                        DI_ct_p = np.asarray(DI_ct_p)
+                    DI_ct.append(DI_ct_p*1e-6)
+
+
+
+        finj_ct = []
+        filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_finj_ct.txt'
+        with open(filename) as f:
+            for line in f:
+                ls = line.strip()
+                if ls:
+                    if "#" in ls:
+                        continue
+                    else:
+                        finj_ct_p = []
+                        l = re.split('\t',ls)
+                        l = [e for e in l if e]
+                        #print(l)
+                        for s in l:
+                            finj_cti = float(s)
+                            finj_ct_p.append(finj_cti)
+                    finj_ct.append(finj_ct_p)
+
+        specdist_ct_spectra_lib.X_2d.append(x_ct)
+        specdist_ct_spectra_lib.DI_2d.append(DI_ct)
+        specdist_ct_spectra_lib.finj_2d.append(finj_ct)
 
 
 
 
+def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
+    X_2d =  specdist_ct_spectra_lib.X_2d
+    DI_2d = specdist_ct_spectra_lib.DI_2d
+    finj_2d = specdist_ct_spectra_lib.finj_2d
 
-def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked):
+    Gamma_values = specdist_ct_spectra_lib.Gamma_values
+    x_inj_values =  specdist_ct_spectra_lib.x_inj_values
     # print(Gamma_values)
     # print(x_inj_values)
     # print(find_nearests(Gamma_values, Gamma_inj_asked))

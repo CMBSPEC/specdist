@@ -1,4 +1,3 @@
-#from .interpolate_ct_spectra import GetSpectra
 from .config import *
 from .utils import *
 from .firas_data import firas
@@ -9,3 +8,4 @@ from .cosmology import *
 from .pispec_functions import *
 from .specdist_functions import *
 from .greens_functions import *
+from .interpolate_ct_spectra import *

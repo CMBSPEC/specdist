@@ -14,18 +14,28 @@ def x_inj(dm_particle,z):
 
 
 def f_inj(dm_particle,cosmo):
-    return 4.849e3*dm_particle.f_dm*dm_particle.f_gamma/dm_particle.x_0*(cosmo.omega_cdm/0.12)*(cosmo.T_cmb/2.726)**-4
+    #factor 2 when f_gamma = 2
+    return 1./2.*1.3098e4*dm_particle.f_dm*dm_particle.f_gamma/dm_particle.x_0*(cosmo.omega_cdm/0.12)*(cosmo.T_cmb/2.726)**-4
 
 
 
-def injection_redshift_zX(cosmo,cosmotherm):
+def injection_redshift_zX(gamma_inj,cosmo,cosmotherm):
     # set_cosmo_to_CT_cosmo_params(cosmo,cosmotherm)
 
     def f(lnz):
         z = np.exp(lnz)
-        return cosmotherm.ct_Gamma_dec*cosmo.t_H0_in_s()-cosmo.E(z)-cosmo.dE_dz(z)*(1.+z)
+        return gamma_inj*cosmo.t_H0_in_s()-cosmo.E(z)-cosmo.dE_dz(z)*(1.+z)
     root = np.exp(optimize.brentq(f, np.log(cosmotherm.ct_zstart), np.log(cosmotherm.ct_zend)))
     return root
+
+def find_Gamma_inj_for_injection_redshift_zX(zX,cosmo,cosmotherm):
+    def f(lng):
+        g = np.exp(lng)
+        return g*cosmo.t_H0_in_s()-cosmo.E(zX)-cosmo.dE_dz(zX)*(1.+zX)
+    root = np.exp(optimize.brentq(f, np.log(1e-20), np.log(1e-2)))
+    return root
+
+
 
 def mu_instantaneous_injection(zi,cosmo,cosmotherm,dm_particle):
     x_0 = 4./3./a_rho
@@ -108,23 +118,41 @@ def Drho_rho_inj_at_z_normalized(z,cosmo,cosmotherm):
 def pi_energy_release_history_dlnrho_dt(z,cosmo,**kwargs):
     ct = kwargs['cosmotherm']
     X_dm = kwargs['dm_particle']
-    delta_t = cosmo.t_of_z_in_s(z)['value'] - cosmo.t_of_z_in_s(cosmo.z_start)['value']
-    #note: this is independent of x_inj
-    return G2/G3*f_inj(X_dm,cosmo)*X_dm.Gamma_inj*x_inj(X_dm,z)*np.exp(-X_dm.Gamma_inj*delta_t)
+    tz = cosmo.t_of_z_in_s(z)['value']
+    delta_t = tz - cosmo.t_of_z_in_s(cosmo.z_start)['value']
+    if X_dm.Gamma_inj*delta_t>100.:
+        return 0.
+    else:
+        #note: this is independent of x_inj
+        return G2/G3*f_inj(X_dm,cosmo)*X_dm.Gamma_inj*x_inj(X_dm,z)*np.exp(-X_dm.Gamma_inj*delta_t)
 
 
 def set_dm_params_to_CT_pi_params(dm_particle,cosmotherm):
     dm_particle.Gamma_inj = cosmotherm.ct_Gamma_dec
     dm_particle.x_0 = cosmotherm.ct_x_dec
 
-def get_fdm_from_Drho_rho_tot(Drho_rho_tot,cosmo,cosmotherm,dm_particle):
+def get_fdm_from_Drho_rho(Drho_rho_tot,cosmo,cosmotherm,dm_particle):
     dm_particle.f_dm = 1.
     dict = {}
     dict['cosmotherm']=cosmotherm
     dict['dm_particle']=dm_particle
-    return Drho_rho_tot/Drho_rho_tot_from_energy_release_history(pi_energy_release_history_dlnrho_dt,cosmo,**dict)
-
-
+    numerator = Drho_rho_tot
+    denominator_y = Drho_rho_y_from_energy_release_history(pi_energy_release_history_dlnrho_dt,cosmo,**dict)
+    denominator_mu = Drho_rho_mu_from_energy_release_history(pi_energy_release_history_dlnrho_dt,cosmo,**dict)
+    r_dict = {}
+    try:
+        r_dict['y'] = numerator/denominator_y
+    except:
+        r_dict['y'] = 0.
+    try:
+        r_dict['mu'] = numerator/denominator_mu
+    except:
+        r_dict['mu'] = 0.
+    try:
+        r_dict['tot'] = numerator/(denominator_mu+denominator_y)
+    except:
+        r_dict['tot'] = 0.
+    return r_dict
 
 def pi_entropy_production_history_dlnN_dt(z,cosmo,**kwargs):
     ct = kwargs['cosmotherm']

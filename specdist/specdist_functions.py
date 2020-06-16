@@ -6,8 +6,8 @@ def redshift_z_mu(cosmo):
     #see eq. 4.47 of https://physique.cuso.ch/fileadmin/physique/document/2014_Chluba_notes.pdf
     #this assumes N_eff = 3.046
     #this is only the double compton thermalization redshift
-    return 1.98e6*(cosmo.omega_b/0.022)**-(2./5.)*((1.-cosmo.Yp/2.)/0.88)**-(2./5.)*(cosmo.T_cmb/2.725)**(1./5.)
-    #return 1.98e6
+    #return 1.98e6*(cosmo.omega_b/0.022)**-(2./5.)*((1.-cosmo.Yp/2.)/0.88)**-(2./5.)*(cosmo.T_cmb/2.725)**(1./5.)
+    return 1.98e6
 
 def visibility_J_bb(z,cosmo):
     #eq. 4.46 of https://physique.cuso.ch/fileadmin/physique/document/2014_Chluba_notes.pdf
@@ -17,7 +17,7 @@ def visibility_J_bb(z,cosmo):
     if math.isnan(result):
         result = 0.
     return result
-    
+
 def visibility_J_bb_star(z,cosmo):
     #see eq. 13 of https://arxiv.org/pdf/1506.06582.pdf
     result = 0.983*np.exp(-(z/redshift_z_mu(cosmo))**(5./2.))*(1.-0.0381*(z/redshift_z_mu(cosmo))**2.29)
@@ -35,7 +35,7 @@ def visibility_J_y(z,cosmo):
 
 def visibility_J_mu(z,cosmo):
     #see eq. 5 of https://arxiv.org/pdf/1304.6120.pdf
-    result = 1.-np.exp((-(1.+z)/5.8e4)**1.88)
+    result = 1.-np.exp(-((1.+z)/5.8e4)**1.88)
     if math.isnan(result):
         result = 0.
     return result
@@ -64,7 +64,7 @@ def critical_frequency_x_c(z):
 def mu_from_energy_release_history(energy_release_history_dlnrho_dt,cosmo,**kwargs):
     def integrand(ln1pz,*args):
         z = np.exp(ln1pz)-1.
-        J_bb = visibility_J_bb_star(z,args[0])
+        J_bb = visibility_J_bb(z,args[0])
         J_mu = visibility_J_mu(z,args[0])
         dt_dln1pz = -1./cosmo.E(z)/args[0].H0()
         dlnrho_dln1pz = energy_release_history_dlnrho_dt(z,args[0],**args[1])*dt_dln1pz
@@ -81,7 +81,7 @@ def mu_from_energy_release_history(energy_release_history_dlnrho_dt,cosmo,**kwar
 def y_from_energy_release_history(energy_release_history_dlnrho_dt,cosmo,**kwargs):
     def integrand(ln1pz,*args):
         z = np.exp(ln1pz)-1.
-        J_bb = visibility_J_bb_star(z,args[0])
+        J_bb = visibility_J_bb(z,args[0])
         J_y = visibility_J_y(z,args[0])
         dt_dln1pz = -1./cosmo.E(z)/args[0].H0()
         dlnrho_dln1pz = energy_release_history_dlnrho_dt(z,args[0],**args[1])*dt_dln1pz
