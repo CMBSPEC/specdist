@@ -85,5 +85,17 @@ def Drho_rho_tot_from_energy_release_history(energy_release_history_dlnrho_dt,co
     return Drho_rho_y_from_energy_release_history(energy_release_history_dlnrho_dt,cosmo,**kwargs)+Drho_rho_mu_from_energy_release_history(energy_release_history_dlnrho_dt,cosmo,**kwargs)
 
 
-def DN_N_from_entropy_production_history(energy_production_history_dlnN_dt,cosmo,**kwargs):
-    return 1.
+def DN_N_from_entropy_production_history(entropy_production_history_dlnN_dt,cosmo,**kwargs):
+    def integrand(ln1pz,*args):
+        z = np.exp(ln1pz)-1.
+        # J_bb = visibility_J_bb(z,args[0])
+        # J_y = visibility_J_y(z,args[0])
+        dt_dln1pz = -1./cosmo.E(z)/args[0].H0()
+        dlnN_dln1pz = entropy_production_history_dlnN_dt(z,args[0],**args[1])*dt_dln1pz
+        result = dlnN_dln1pz
+        return result
+    result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs))
+    r_dict = {}
+    r_dict['value']=result[0]
+    r_dict['err'] = result[1]
+    return r_dict

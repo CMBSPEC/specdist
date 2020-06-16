@@ -38,8 +38,38 @@ def mu_instantaneous_injection(zi,cosmo,cosmotherm,dm_particle):
     term_1 = 0.#3./kappa_c*cosmotherm.ct_Drho_rho_dec
     #term_2 = 3.*a_rho/kappa_c*(x_i-x_0)*visibility_J_bb_star(zi,cosmo)*DN_N
     term_2 = 3.*a_rho/kappa_c*(x_i-x_0*P_s)*visibility_J_bb_star(zi,cosmo)*DN_N
-
     return term_1 + term_2
+
+def dmu_dt_continuous_injection(zi,cosmo,**kwargs):
+    ct = kwargs['cosmotherm']
+    X_dm = kwargs['dm_particle']
+    x_0 = 4./3./a_rho
+    x_i = x_inj(X_dm,0.)
+    DN_N = pi_entropy_production_history_dlN_dt(z,cosmo,**kwargs)
+    x_c = critical_frequency_x_c(zi)
+    P_s = np.exp(-x_c/x_i)
+
+    term_1 = 0.#3./kappa_c*cosmotherm.ct_Drho_rho_dec
+    #term_2 = 3.*a_rho/kappa_c*(x_i-x_0)*visibility_J_bb_star(zi,cosmo)*DN_N
+    term_2 = 3.*a_rho/kappa_c*(x_i-x_0*P_s)*visibility_J_bb_star(zi,cosmo)*DN_N
+    return term_1 + term_2
+
+def mu_continuous_injection(cosmo,cosmotherm,dm_particle):
+    dict = {}
+    dict['cosmotherm']=cosmotherm
+    dict['dm_particle']=dm_particle
+    def integrand(ln1pz,*args):
+        z = np.exp(ln1pz)-1.
+        dt_dln1pz = -1./cosmo.E(z)/args[0].H0()
+        dmu_dln1pz = dmu_dt_continuous_injection(z,args[0],**args[1])*dt_dln1pz
+        result = dmu_dln1pz
+        return result
+    result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,dict))
+    r_dict = {}
+    r_dict['value']=result[0]
+    r_dict['err'] = result[1]
+    return r_dict
+
 
 def dI_dln1pz_of_z(z,cosmo,cosmotherm):
     # set_cosmo_to_CT_cosmo_params(cosmo,cosmotherm)
@@ -93,3 +123,12 @@ def get_fdm_from_Drho_rho_tot(Drho_rho_tot,cosmo,cosmotherm,dm_particle):
     dict['cosmotherm']=cosmotherm
     dict['dm_particle']=dm_particle
     return Drho_rho_tot/Drho_rho_tot_from_energy_release_history(pi_energy_release_history_dlnrho_dt,cosmo,**dict)
+
+
+
+def pi_entropy_production_history_dlN_dt(z,cosmo,**kwargs):
+    ct = kwargs['cosmotherm']
+    X_dm = kwargs['dm_particle']
+    delta_t = cosmo.t_of_z_in_s(z)['value'] - cosmo.t_of_z_in_s(cosmo.z_start)['value']
+    #note: this is dependent of x_inj
+    return f_inj(X_dm,cosmo)*X_dm.Gamma_inj*np.exp(-X_dm.Gamma_inj*delta_t)
