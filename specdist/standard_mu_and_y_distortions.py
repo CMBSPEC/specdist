@@ -2,15 +2,27 @@ from .utils import *
 
 
 
-
+# note on units: 10^26 Jansky = 1 USI
 
 #Black body spectrum (in MJy/sr)
 def B_nu_of_T(NU,T):
-    return (2.*hplanck/clight**2.)*NU**3./(np.exp(hplanck*NU/kb/T)-1.)*1.e20
+    try:
+        result = (2.*hplanck/clight**2.)*NU**3./(np.exp(hplanck*NU/kb/T)-1.)*1.e20
+    except RuntimeWarning:
+        result = 0.
+    if math.isnan(result):
+        result = 0.
+    return result
 
 #Derivative of black body spectrum (in MJy/sr/K)
 def dB_nu_dT_at_T(NU,T):
-    return B_nu_of_T(NU,T)/T*(hplanck*NU/kb/T)*np.exp(hplanck*NU/kb/T)/(np.exp(hplanck*NU/kb/T)-1.)
+    try:
+        result = B_nu_of_T(NU,T)/T*(hplanck*NU/kb/T)*np.exp(hplanck*NU/kb/T)/(np.exp(hplanck*NU/kb/T)-1.)
+    except RuntimeWarning:
+        result = 0.
+    if math.isnan(result):
+        result = 0.
+    return result
 
 #MU distortion
 def dS_dMU(NU,T):
@@ -20,7 +32,13 @@ def dS_dMU(NU,T):
 #Y distortion
 def dS_dY(NU,T):
     x = (hplanck*NU/kb/T)
-    return T*(x/np.tanh(x/2.)-4.)*dB_nu_dT_at_T(NU,T)
+    try:
+        result = T*(x/np.tanh(x/2.)-4.)*dB_nu_dT_at_T(NU,T)
+    except RuntimeWarning:
+        result = 0.
+    if math.isnan(result):
+        result = 0.
+    return result
 
 
 def GetMuSpecDistAtTandX(mu,T,X):
@@ -60,19 +78,28 @@ def GetYSpecDistAtTandX(y,T,X):
     return np.asarray(dist)
 
 def G_bb(x):
-    result =  x*np.exp(x)/(np.exp(x)-1.)**2.
+    try:
+        result =  x*np.exp(x)/(np.exp(x)-1.)**2.
+    except RuntimeWarning:
+        result = 0.
     if math.isnan(result):
         result = 0.
     return result
 
 def Y_sz(x):
-    result = G_bb(x)*(x*(np.exp(x)+1.)/(np.exp(x)-1.)-4.)
+    try:
+        result = G_bb(x)*(x*(np.exp(x)+1.)/(np.exp(x)-1.)-4.)
+    except RuntimeWarning:
+        result = 0.
     if math.isnan(result):
         result = 0.
     return result
 
 def M(x):
-    result = (x/beta_mu-1.)*np.exp(x)/(np.exp(x)-1.)**2.
+    try:
+        result = (x/beta_mu-1.)*np.exp(x)/(np.exp(x)-1.)**2.
+    except RuntimeWarning:
+        result = 0.
     if math.isnan(result):
         result = 0.
     return result
@@ -80,8 +107,8 @@ def M(x):
 
 def DI_normalization_in_MJy_per_sr(x,cosmo):
     nu_in_Hz = nu_in_GHz_of_x(x,cosmo)*1e9
-    norm_in_Jy_per_sr = 2.*hplanck*nu_in_Hz**3./clight**2.*1e26
-    return norm_in_Jy_per_sr*1e6
+    norm_in_Jy_per_sr = 2.*hplanck*nu_in_Hz**3./clight**2.*1e20
+    return norm_in_Jy_per_sr
 
 
 

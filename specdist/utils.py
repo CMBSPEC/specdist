@@ -23,6 +23,26 @@ def find_nearests(array, value):
     return (idxm,idxp)
 
 
+def scientific_notation(p_value):
+    str_xinj_asked = str("%.3e"%p_value)
+    text_gamma_str1 = ''
+    if p_value>1.:
+        num = float(str_xinj_asked.split('e+')[0])
+        exp = int(str_xinj_asked.split('e+')[1])
+        text_gamma_str1 = r'$%.2f \times 10^{%d}$'% (num,exp)
+        if num == 1.:
+            text_gamma_str1 = r'$10^{%d}$'% (exp)
+    if p_value<1.:
+        num = float(str_xinj_asked.split('e-')[0])
+        exp = int(str_xinj_asked.split('e-')[1])
+        text_gamma_str1 = r'$%.2f \times 10^{-%d}$'% (num,exp)
+        if num == 1.:
+            text_gamma_str1 = r'$10^{-%d}$'% (exp)
+    if p_value==1.:
+        text_gamma_str1 = r'$1$'
+    return text_gamma_str1
+
+
 
 
 #1 GeV/c2 = 1.78266192×10−27 kg

@@ -13,14 +13,20 @@ def visibility_J_bb(z,cosmo):
     #eq. 4.46 of https://physique.cuso.ch/fileadmin/physique/document/2014_Chluba_notes.pdf
     #this is assuming DC only
     #z = np.asarray(z)
-    result = np.exp(-(z/redshift_z_mu(cosmo))**(5./2.))
+    try:
+        result = np.exp(-(z/redshift_z_mu(cosmo))**(5./2.))
+    except:
+        result = 0.
     if math.isnan(result):
         result = 0.
     return result
 
 def visibility_J_bb_star(z,cosmo):
     #see eq. 13 of https://arxiv.org/pdf/1506.06582.pdf
-    result = 0.983*np.exp(-(z/redshift_z_mu(cosmo))**(5./2.))*(1.-0.0381*(z/redshift_z_mu(cosmo))**2.29)
+    try:
+        result = 0.983*visibility_J_bb(z,cosmo)*(1.-0.0381*(z/redshift_z_mu(cosmo))**2.29)
+    except:
+        result = 0.
     if math.isnan(result):
         result = 0.
     return result
@@ -35,7 +41,10 @@ def visibility_J_y(z,cosmo):
 
 def visibility_J_mu(z,cosmo):
     #see eq. 5 of https://arxiv.org/pdf/1304.6120.pdf
-    result = 1.-np.exp(-((1.+z)/5.8e4)**1.88)
+    try:
+        result = 1.-np.exp(-((1.+z)/5.8e4)**1.88)
+    except:
+        result = 0.
     if math.isnan(result):
         result = 0.
     return result

@@ -21,6 +21,22 @@ def greens_functions_DI_from_energy_release_history_in_MJy_per_sr(X,energy_relea
     x = np.asarray(X)
     dist = []
     dist_err = []
+    #trapezoidal rule
+    nz = int(50)
+    #ln1pz_array = np.logspace(np.log10(np.log(1.+cosmo.z_start)),np.log10(np.log(1.+cosmo.z_end)),nz)
+    ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
+    Ip = []
+
+    for xp in x:
+        a_args = (cosmo,kwargs,xp)
+        int_array_xp = []
+        for p in ln1pz_array:
+            int_p = integrand(p,*a_args)
+            int_array_xp.append(int_p)
+        int_array_xp=np.asarray(int_array_xp)
+        Ip.append(np.trapz(int_array_xp,ln1pz_array))
+    Ip = np.asarray(Ip)
+    return (Ip,np.zeros(len(Ip)))
     try:
         for xp in x:
             result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs,xp))

@@ -160,3 +160,13 @@ def pi_entropy_production_history_dlnN_dt(z,cosmo,**kwargs):
     delta_t = cosmo.t_of_z_in_s(z)['value'] - cosmo.t_of_z_in_s(cosmo.z_start)['value']
     #note: this is dependent of x_inj
     return f_inj(X_dm,cosmo)*X_dm.Gamma_inj*np.exp(-X_dm.Gamma_inj*delta_t)
+
+def get_fdm_from_mu_continuous_injection(mu_limit,cosmo,cosmotherm,dm_particle):
+    dm_particle.f_dm = 1.
+    numerator = mu_limit
+    denominator = mu_continuous_injection(cosmo,cosmotherm,dm_particle)['value']
+    try:
+        result = numerator/denominator
+    except:
+        result = 0.
+    return result

@@ -8,28 +8,30 @@ from .config import *
 
 
 class specdist_ct_spectra_lib:
-    case_id = "case_1_040520"
+    def __init__(self):
+        self.case_id = ""
 
-    # this_dir, this_filename = os.path.split(__file__)
-    # DATA_PATH = os.path.join(this_dir, "data", "data.txt")
-    # path_to_spectra = resource_filename("specdist","data/ct_database/"+case_id)
-    # print(path_to_spectra)
-    path_to_spectra = ""
+        # this_dir, this_filename = os.path.split(__file__)
+        # DATA_PATH = os.path.join(this_dir, "data", "data.txt")
+        # path_to_spectra = resource_filename("specdist","data/ct_database/"+case_id)
+        # print(path_to_spectra)
+        self.path_to_spectra = ""
 
-    Gamma_inj_min = 1e-17
-    Gamma_inj_max = 1e-8
-    N_Gamma_inj = 50
-    Gamma_values = np.logspace(np.log10(Gamma_inj_min),np.log10(Gamma_inj_max),N_Gamma_inj)
+        self.Gamma_inj_min = 1e-17
+        self.Gamma_inj_max = 1e-8
+        self.N_Gamma_inj = 50
+        self.Gamma_values = np.logspace(np.log10(self.Gamma_inj_min),np.log10(self.Gamma_inj_max),self.N_Gamma_inj)
 
-    x_inj_min = 1e-6
-    x_inj_max = 1e6
-    N_x_inj = 200
-    x_inj_values = np.logspace(np.log10(x_inj_min),np.log10(x_inj_max),N_x_inj)
+        self.x_inj_min = 1e-6
+        self.x_inj_max = 1e6
+        self.N_x_inj = 200
+        self.x_inj_values = np.logspace(np.log10(self.x_inj_min),np.log10(self.x_inj_max),self.N_x_inj)
 
 
-    X_2d = []
-    DI_2d = []
-    finj_2d = []
+        self.X_2d = []
+        self.DI_2d = []
+        self.finj_2d = []
+
 
 
 
@@ -37,11 +39,12 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
     if case == 'bare':
         specdist_ct_spectra_lib.case_id = "case_1_040520"
     elif case == 'lyc':
-        specdist_ct_spectra_lib.case_id = "case_1_040520"
+        specdist_ct_spectra_lib.case_id = "case_lyman_090620"
     else:
         print('this case has not been computed. Computed cases are "lyc" or "bare".')
         return
     specdist_ct_spectra_lib.path_to_spectra  = path_to_ct_database + specdist_ct_spectra_lib.case_id
+
 
     for id_Gamma in range(specdist_ct_spectra_lib.N_Gamma_inj):
     # for id_Gamma in range(1):
@@ -244,7 +247,21 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
 
     f_gamma_asked_xinj_asked = interp1d(S_gamma_asked_xinj_asked[0], S_gamma_asked_xinj_asked[1])
     ########### get spectra at required x values
+    bound_x_min = np.min(S_gamma_asked_xinj_asked[0])
+    bound_x_max = np.max(S_gamma_asked_xinj_asked[0])
+
     array_x_asked = np.asarray(x_asked)
+
+    min_x_asked = np.min(array_x_asked)
+    max_x_asked = np.max(array_x_asked)
+
+    id_min = 0
+    id_max = None
+    if min_x_asked < bound_x_min:
+        id_min = find_nearests(array_x_asked, bound_x_min)[1]
+    if max_x_asked > bound_x_max:
+        id_max = find_nearests(array_x_asked, bound_x_max)[0]
+    array_x_asked = array_x_asked[id_min:id_max]
 
     array_S_result = f_gamma_asked_xinj_asked(array_x_asked)
 
