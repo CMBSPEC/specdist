@@ -39,7 +39,7 @@ def find_Gamma_inj_for_injection_redshift_zX(zX,cosmo,cosmotherm):
 
 def mu_instantaneous_injection(zi,cosmo,cosmotherm,dm_particle):
     x_0 = 4./3./a_rho
-    x_i = x_inj(dm_particle,0.)
+    x_i = x_inj(dm_particle,zi)
 
     DN_N = 1.
     x_c = critical_frequency_x_c(zi)
@@ -54,7 +54,7 @@ def dmu_dt_continuous_injection(zi,cosmo,**kwargs):
     ct = kwargs['cosmotherm']
     X_dm = kwargs['dm_particle']
     x_0 = 4./3./a_rho
-    x_i = x_inj(X_dm,0.)
+    x_i = x_inj(X_dm,zi)
     DN_N = pi_entropy_production_history_dlnN_dt(zi,cosmo,**kwargs)
     x_c = critical_frequency_x_c(zi)
     P_s = np.exp(-x_c/x_i)
@@ -74,7 +74,21 @@ def mu_continuous_injection(cosmo,cosmotherm,dm_particle):
         dmu_dln1pz = dmu_dt_continuous_injection(z,args[0],**args[1])*dt_dln1pz
         result = dmu_dln1pz
         return result
-    result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,dict))
+
+    #trapezoidal rule
+    nz = int(50)
+    ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
+    Ip = []
+    int_array_xp = []
+    a_args = (cosmo,dict)
+    for p in ln1pz_array:
+        int_p = integrand(p,*a_args)
+        int_array_xp.append(int_p)
+    int_array_xp=np.asarray(int_array_xp)
+    Ip = np.trapz(int_array_xp,ln1pz_array)
+    result = (Ip,0.)
+    ####end trapezoidal rule
+    #result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,dict))
     r_dict = {}
     r_dict['value']=result[0]
     r_dict['err'] = result[1]
@@ -158,7 +172,7 @@ def pi_entropy_production_history_dlnN_dt(z,cosmo,**kwargs):
     ct = kwargs['cosmotherm']
     X_dm = kwargs['dm_particle']
     delta_t = cosmo.t_of_z_in_s(z)['value'] - cosmo.t_of_z_in_s(cosmo.z_start)['value']
-    #note: this is dependent of x_inj
+    #note: this is *dependent* of x_inj
     return f_inj(X_dm,cosmo)*X_dm.Gamma_inj*np.exp(-X_dm.Gamma_inj*delta_t)
 
 def get_fdm_from_mu_continuous_injection(mu_limit,cosmo,cosmotherm,dm_particle):

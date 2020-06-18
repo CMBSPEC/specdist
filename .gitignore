@@ -123,3 +123,7 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# ct_spectra
+specdist/ct_spectra/*
+specdist/ct_spectra

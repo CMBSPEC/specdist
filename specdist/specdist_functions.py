@@ -121,7 +121,20 @@ def DN_N_from_entropy_production_history(entropy_production_history_dlnN_dt,cosm
         dlnN_dln1pz = entropy_production_history_dlnN_dt(z,args[0],**args[1])*dt_dln1pz
         result = dlnN_dln1pz
         return result
-    result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs))
+    #trapezoidal rule
+    nz = int(50)
+    ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
+    Ip = []
+    int_array_xp = []
+    a_args = (cosmo,kwargs)
+    for p in ln1pz_array:
+        int_p = integrand(p,*a_args)
+        int_array_xp.append(int_p)
+    int_array_xp=np.asarray(int_array_xp)
+    Ip = np.trapz(int_array_xp,ln1pz_array)
+    result = (Ip,0.)
+    ####end trapezoidal rule
+    #result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs))
     r_dict = {}
     r_dict['value']=result[0]
     r_dict['err'] = result[1]

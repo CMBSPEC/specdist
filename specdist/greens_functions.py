@@ -23,7 +23,6 @@ def greens_functions_DI_from_energy_release_history_in_MJy_per_sr(X,energy_relea
     dist_err = []
     #trapezoidal rule
     nz = int(50)
-    #ln1pz_array = np.logspace(np.log10(np.log(1.+cosmo.z_start)),np.log10(np.log(1.+cosmo.z_end)),nz)
     ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
     Ip = []
 
@@ -37,6 +36,7 @@ def greens_functions_DI_from_energy_release_history_in_MJy_per_sr(X,energy_relea
         Ip.append(np.trapz(int_array_xp,ln1pz_array))
     Ip = np.asarray(Ip)
     return (Ip,np.zeros(len(Ip)))
+    ####end trapezoidal rule
     try:
         for xp in x:
             result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs,xp))

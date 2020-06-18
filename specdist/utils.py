@@ -20,6 +20,9 @@ def find_nearests(array, value):
     else:
         idxm = idx
         idxp = idx+1
+    if idxp == len(array):
+        idxm -= 1
+        idxp -= 1
     return (idxm,idxp)
 
 
