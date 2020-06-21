@@ -26,19 +26,29 @@ def find_nearests(array, value):
     return (idxm,idxp)
 
 
-def scientific_notation(p_value):
+def scientific_notation(p_value,digit=2):
     str_xinj_asked = str("%.3e"%p_value)
     text_gamma_str1 = ''
     if p_value>1.:
         num = float(str_xinj_asked.split('e+')[0])
         exp = int(str_xinj_asked.split('e+')[1])
-        text_gamma_str1 = r'$%.2f \times 10^{%d}$'% (num,exp)
+        if digit == 1:
+            text_gamma_str1 = r'$%.1f \times 10^{%d}$'% (num,exp)
+        if digit == 2:
+            text_gamma_str1 = r'$%.2f \times 10^{%d}$'% (num,exp)
+        if digit == 0:
+            text_gamma_str1 = r'$%.0f \times 10^{%d}$'% (num,exp)
         if num == 1.:
             text_gamma_str1 = r'$10^{%d}$'% (exp)
     if p_value<1.:
         num = float(str_xinj_asked.split('e-')[0])
         exp = int(str_xinj_asked.split('e-')[1])
-        text_gamma_str1 = r'$%.2f \times 10^{-%d}$'% (num,exp)
+        if digit == 1:
+            text_gamma_str1 = r'$%.1f \times 10^{-%d}$'% (num,exp)
+        if digit == 2:
+            text_gamma_str1 = r'$%.2f \times 10^{-%d}$'% (num,exp)
+        if digit == 0:
+            text_gamma_str1 = r'$%.0f \times 10^{-%d}$'% (num,exp)
         if num == 1.:
             text_gamma_str1 = r'$10^{-%d}$'% (exp)
     if p_value==1.:

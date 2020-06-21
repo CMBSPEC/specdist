@@ -79,7 +79,20 @@ def mu_from_energy_release_history(energy_release_history_dlnrho_dt,cosmo,**kwar
         dlnrho_dln1pz = energy_release_history_dlnrho_dt(z,args[0],**args[1])*dt_dln1pz
         result = 3./kappa_c*J_bb*J_mu*dlnrho_dln1pz
         return result
-    result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs))
+    #trapezoidal rule
+    nz = int(50)
+    ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
+    Ip = []
+    int_array_xp = []
+    a_args = (cosmo,kwargs)
+    for p in ln1pz_array:
+        int_p = integrand(p,*a_args)
+        int_array_xp.append(int_p)
+    int_array_xp=np.asarray(int_array_xp)
+    Ip = np.trapz(int_array_xp,ln1pz_array)
+    result = (Ip,0.)
+    ####end trapezoidal rule
+    #result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs))
     r_dict = {}
     r_dict['value']=result[0]
     r_dict['err'] = result[1]
@@ -96,7 +109,20 @@ def y_from_energy_release_history(energy_release_history_dlnrho_dt,cosmo,**kwarg
         dlnrho_dln1pz = energy_release_history_dlnrho_dt(z,args[0],**args[1])*dt_dln1pz
         result = J_bb*J_y*dlnrho_dln1pz/4.
         return result
-    result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs))
+    #trapezoidal rule
+    nz = int(50)
+    ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
+    Ip = []
+    int_array_xp = []
+    a_args = (cosmo,kwargs)
+    for p in ln1pz_array:
+        int_p = integrand(p,*a_args)
+        int_array_xp.append(int_p)
+    int_array_xp=np.asarray(int_array_xp)
+    Ip = np.trapz(int_array_xp,ln1pz_array)
+    result = (Ip,0.)
+    ####end trapezoidal rule
+    #result =  quad(integrand,np.log(1.+cosmo.z_start),np.log(1.+cosmo.z_end), args=(cosmo,kwargs))
     r_dict = {}
     r_dict['value']=result[0]
     r_dict['err'] = result[1]
