@@ -2,7 +2,7 @@ Python package to study spectral distortions of the cosmic microwave background 
 
 Mainly based on codes developed by Jens Chluba and the Manchester spectral distortion group (Sandeep Acharya, Boris Bolliet, Luke Hart, Charis Kaur, Tom Kite, Elizabeth Lee, Mathieu Remazeilles, Francesco Pace, Andrea Ravenni, Aditya Rotti, Abir Sarkar).
 
-User dependent path have to be set in specdist/config.py.
+User dependent paths have to be set in specdist/config.py.
 
 To learn about CMB spectral distortions:
 
