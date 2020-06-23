@@ -25,13 +25,15 @@ def find_nearests(array, value):
         idxp -= 1
     return (idxm,idxp)
 
-
 def scientific_notation(p_value,digit=2):
     str_xinj_asked = str("%.3e"%p_value)
     text_gamma_str1 = ''
     if p_value>1.:
         num = float(str_xinj_asked.split('e+')[0])
         exp = int(str_xinj_asked.split('e+')[1])
+        if (round(num,digit)==10.):
+            num = 1.
+            exp = exp + 1
         if digit == 1:
             text_gamma_str1 = r'$%.1f \times 10^{%d}$'% (num,exp)
         if digit == 2:
@@ -43,6 +45,9 @@ def scientific_notation(p_value,digit=2):
     if p_value<1.:
         num = float(str_xinj_asked.split('e-')[0])
         exp = int(str_xinj_asked.split('e-')[1])
+        if (round(num,digit)==10.):
+            num = 1.
+            exp = exp - 1
         if digit == 1:
             text_gamma_str1 = r'$%.1f \times 10^{-%d}$'% (num,exp)
         if digit == 2:
@@ -58,11 +63,27 @@ def scientific_notation(p_value,digit=2):
 
 
 
+
 #1 GeV/c2 = 1.78266192×10−27 kg
 GeV_over_kg = 1.78266192e-27
 
 #1 km/Mpc
 km_over_Mpc = 3.24077929e-20
+
+# 1 GHz/eV
+GHz_over_eV =  4.1356655385e-6
+
+
+
+def nu_in_GHz_of_x(x,cosmo):
+    return kb*cosmo.T_cmb*x/hplanck*1e-9
+
+def x_of_nu_in_GHz(nu,cosmo):
+    return hplanck*nu*1e9/kb/cosmo.T_cmb
+
+def x_of_hnu_in_eV(hnu,cosmo):
+    nu_in_GHz = hnu*4.1356655385e-6
+    return x_of_nu_in_GHz(nu_in_GHz,cosmo)
 
 kb = 1.38064852e-23 #m2 kg s-2 K-1
 clight = 299792458. #m/s

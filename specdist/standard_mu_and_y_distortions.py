@@ -109,8 +109,3 @@ def DI_normalization_in_MJy_per_sr(x,cosmo):
     nu_in_Hz = nu_in_GHz_of_x(x,cosmo)*1e9
     norm_in_MJy_per_sr = 2.*hplanck*nu_in_Hz**3./clight**2.*1e20
     return norm_in_MJy_per_sr
-
-
-
-def nu_in_GHz_of_x(x,cosmo):
-    return kb*cosmo.T_cmb*x/hplanck*1e-9

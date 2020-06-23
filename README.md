@@ -12,5 +12,10 @@ https://physique.cuso.ch/fileadmin/physique/document/2014_Chluba_notes.pdf
 https://arxiv.org/pdf/1909.01593.pdf
 
 
-cosmotherm comments:
+Cosmotherm comments:
+
 * redshift dependent functions requiring PDE solver in output_fz_functions(), inside Solve_PDE.cpp.
+
+* photon injection source and heating term in cosmotherm.rel_corr/Thermalization_Module/define_PDE_Plugins/define_PDE_photon_injection_decay.cpp
+
+* temperature equation (rho_e) defined in def_drho_dz in define_PDE.cpp
