@@ -128,3 +128,4 @@ dmypy.json
 specdist/ct_spectra/*
 specdist/ct_spectra
 specdist/data/PCA_modes/Modes.zip
+*.txt
