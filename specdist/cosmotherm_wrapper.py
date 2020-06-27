@@ -28,6 +28,7 @@ class cosmotherm:
         self.save_dir_name = 'tmp'
         self.save_Xe = 'no'
         self.ct_fdm = 0
+        self.get_finj = 0
 
         self.path_to_ct_param_file = path_to_cosmotherm + '/runfiles/'
         self.tmp_dir_name = 'tmp'
@@ -55,42 +56,48 @@ class cosmotherm:
         f.close()
         subprocess.call([path_to_cosmotherm+'/CosmoTherm',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)+'/tmp.ini'])
         r_dict = {}
-        if (self.ct_pi_redshift_evolution_mode == 1):
-            R = np.loadtxt(p_dict['path for output']+'pi_finj_calc.txt')
-            r_dict["z"] = R[:,0]
-            r_dict["dDrho_rhodt_rel"] = R[:,2]
-            with open(p_dict['path for output']+'pi_finj_calc.txt') as f:
-                line = f.readline()
-                x = line.strip()
-                l = re.split(r'[=#\t]',x)
-                l[:] = [e.strip() for e in l if e]
-                l_dict_keys = l[0::2]
-                l_dict_values = l[1::2]
-                l_dict = {}
-                for k,v in zip(l_dict_keys,l_dict_values):
-                    l_dict[k]=float(v)
-            r_dict = {**r_dict, **l_dict}
+        if(self.get_finj==1):
+            R = np.loadtxt(p_dict['path for output']+'pi_finj_boris_jens.txt')
+            r_dict['finj_boris'] = R[0]
+            r_dict['finj_jens'] = R[1]
         else:
-            R = np.loadtxt(p_dict['path for output']+'Dn.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-            r_dict['x'] = R[:,0]
-            r_dict['DI'] = R[:,5]
-            if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
-                R = np.loadtxt(p_dict['path for output']+'Xe_Xp_etc.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-                r_dict['Xe_redshifts'] = R[:,0]
-                r_dict['Xe_values'] = R[:,6]
-        if self.ct_include_pi == 1:
-            f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-            lines = f.readlines()
-            for line in lines:
-                if 'finj' in line:
-                    for t in line.split():
-                        try:
-                            finj = float(line.split()[2])
-                        except ValueError:
-                            print('error for process %d, f_inj not found'%index_pval)
-                            pass
-            f.close()
-            r_dict['finj'] = finj
+            if (self.ct_pi_redshift_evolution_mode == 1):
+                R = np.loadtxt(p_dict['path for output']+'pi_finj_calc.txt')
+                r_dict["z"] = R[:,0]
+                r_dict["dDrho_rhodt_rel"] = R[:,2]
+                with open(p_dict['path for output']+'pi_finj_calc.txt') as f:
+                    line = f.readline()
+                    x = line.strip()
+                    l = re.split(r'[=#\t]',x)
+                    l[:] = [e.strip() for e in l if e]
+                    l_dict_keys = l[0::2]
+                    l_dict_values = l[1::2]
+                    l_dict = {}
+                    for k,v in zip(l_dict_keys,l_dict_values):
+                        l_dict[k]=float(v)
+                r_dict = {**r_dict, **l_dict}
+            else:
+                R = np.loadtxt(p_dict['path for output']+'Dn.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                r_dict['x'] = R[:,0]
+                r_dict['DI'] = R[:,5]
+                if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
+                    R = np.loadtxt(p_dict['path for output']+'Xe_Xp_etc.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                    r_dict['Xe_redshifts'] = R[:,0]
+                    r_dict['Xe_values'] = R[:,6]
+                if self.ct_include_pi == 1:
+                    f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                    lines = f.readlines()
+                    for line in lines:
+                        if 'finj' in line:
+                            for t in line.split():
+                                try:
+                                    finj = float(line.split()[2])
+                                except ValueError:
+                                    print('error for process %d, f_inj not found'%index_pval)
+                                    pass
+                    f.close()
+                    r_dict['finj'] = finj
+        #print(r_dict)
         return r_dict
 
     def compute_specdist_parallel(self,index_pval,param_values_array,param_name):

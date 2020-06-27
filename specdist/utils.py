@@ -82,7 +82,7 @@ def x_of_nu_in_GHz(nu,cosmo):
     return hplanck*nu*1e9/kb/cosmo.T_cmb
 
 def x_of_hnu_in_eV(hnu,cosmo):
-    nu_in_GHz = hnu*4.1356655385e-6
+    nu_in_GHz = hnu*1./GHz_over_eV
     return x_of_nu_in_GHz(nu_in_GHz,cosmo)
 
 kb = 1.38064852e-23 #m2 kg s-2 K-1

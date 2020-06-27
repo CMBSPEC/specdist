@@ -19,6 +19,13 @@ def f_inj(dm_particle,cosmo):
 
 
 
+def get_f_inj_from_Drho_rho(Drho_rho_tot,cosmo,cosmotherm,dm_particle):
+    dm_particle.f_dm = get_fdm_from_Drho_rho(Drho_rho_tot,cosmo,cosmotherm,dm_particle)['tot']
+    #factor 2 when f_gamma = 2
+    return 1./2.*1.3098e4*dm_particle.f_dm*dm_particle.f_gamma/dm_particle.x_0*(cosmo.omega_cdm/0.12)*(cosmo.T_cmb/2.726)**-4
+
+
+
 def injection_redshift_zX(gamma_inj,cosmo,cosmotherm):
     # set_cosmo_to_CT_cosmo_params(cosmo,cosmotherm)
 

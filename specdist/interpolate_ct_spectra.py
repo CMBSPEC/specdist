@@ -40,10 +40,18 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.case_id = "case_1_040520"
     elif case == 'lyc':
         specdist_ct_spectra_lib.case_id = "case_lyman_090620"
+    elif case == 'lyc_reio':
+        specdist_ct_spectra_lib.case_id = "case_lyman_reio_180620"
+    elif case == 'raw_lyc_reio':
+        specdist_ct_spectra_lib.case_id = "case_raw_lyman_reio_180620"
     else:
         print('this case has not been computed. Computed cases are "lyc" or "bare".')
         return
     specdist_ct_spectra_lib.path_to_spectra  = path_to_ct_database + specdist_ct_spectra_lib.case_id
+
+    if case == 'raw_lyc_reio':
+        specdist_ct_spectra_lib.case_id = "case_lyman_reio_180620"
+
 
 
     for id_Gamma in range(specdist_ct_spectra_lib.N_Gamma_inj):
@@ -90,7 +98,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
                             DI_cti = float(s)
                             DI_ct_p.append(DI_cti)
                         DI_ct_p = np.asarray(DI_ct_p)
-                    DI_ct.append(DI_ct_p*1e-6)
+                    DI_ct.append(DI_ct_p)
 
 
 
