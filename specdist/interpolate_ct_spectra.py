@@ -44,6 +44,18 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.case_id = "case_lyman_reio_180620"
     elif case == 'raw_lyc_reio':
         specdist_ct_spectra_lib.case_id = "case_raw_lyman_reio_180620"
+    elif case == 'mu_fit':
+        specdist_ct_spectra_lib.case_id = "case_for_mu_fit"
+        specdist_ct_spectra_lib.Gamma_inj_min = 1e-9
+        specdist_ct_spectra_lib.Gamma_inj_max = 1e-6
+        specdist_ct_spectra_lib.N_Gamma_inj = 4
+        specdist_ct_spectra_lib.Gamma_values = np.logspace(np.log10(specdist_ct_spectra_lib.Gamma_inj_min),np.log10(specdist_ct_spectra_lib.Gamma_inj_max),specdist_ct_spectra_lib.N_Gamma_inj)
+
+        specdist_ct_spectra_lib.x_inj_min = 1e1
+        specdist_ct_spectra_lib.x_inj_max = 1e8
+        specdist_ct_spectra_lib.N_x_inj = 50
+        specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
+
     else:
         print('this case has not been computed. Computed cases are "lyc" or "bare".')
         return
@@ -51,6 +63,8 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
 
     if case == 'raw_lyc_reio':
         specdist_ct_spectra_lib.case_id = "case_lyman_reio_180620"
+    if case == 'mu_fit':
+        specdist_ct_spectra_lib.case_id = "for_mu_fit"
 
 
 
@@ -61,7 +75,10 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
 
         #read x array
         x_ct = []
-        filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_x_ct.txt'
+        if case == 'mu_fit':
+            filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_x_ct.txt'
+        else:
+            filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_x_ct.txt'
         with open(filename) as f:
             for line in f:
                 ls = line.strip()
@@ -82,28 +99,71 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
 
         #read DI array
         DI_ct = []
-        filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_DI_ct.txt'
-        with open(filename) as f:
-            for line in f:
-                ls = line.strip()
-                if ls:
-                    if "#" in ls:
-                        continue
-                    else:
-                        DI_ct_p = []
-                        l = re.split('\t',ls)
-                        l = [e for e in l if e]
-                        #print(l)
-                        for s in l:
-                            DI_cti = float(s)
-                            DI_ct_p.append(DI_cti)
-                        DI_ct_p = np.asarray(DI_ct_p)
-                    DI_ct.append(DI_ct_p)
+        if case == 'mu_fit':
+            DI_ct_bare = []
+            DI_ct_hubble = []
+            filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_DI_ct.txt'
+            filename_hubble = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_hubble_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_hubble_G_' + str_gamma  + '_DI_ct.txt'
+            with open(filename) as f:
+                for line in f:
+                    ls = line.strip()
+                    if ls:
+                        if "#" in ls:
+                            continue
+                        else:
+                            DI_ct_p = []
+                            l = re.split('\t',ls)
+                            l = [e for e in l if e]
+                            #print(l)
+                            for s in l:
+                                DI_cti = float(s)
+                                DI_ct_p.append(DI_cti)
+                            DI_ct_p = np.asarray(DI_ct_p)
+                        DI_ct_bare.append(DI_ct_p)
+            with open(filename_hubble) as f:
+                for line in f:
+                    ls = line.strip()
+                    if ls:
+                        if "#" in ls:
+                            continue
+                        else:
+                            DI_ct_p = []
+                            l = re.split('\t',ls)
+                            l = [e for e in l if e]
+                            #print(l)
+                            for s in l:
+                                DI_cti = float(s)
+                                DI_ct_p.append(DI_cti)
+                            DI_ct_p = np.asarray(DI_ct_p)
+                        DI_ct_hubble.append(DI_ct_p)
+            for (p_bare,p_hubble) in zip(DI_ct_bare,DI_ct_hubble):
+                DI_ct.append(p_bare-p_hubble)
+        else:
+            filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_DI_ct.txt'
+            with open(filename) as f:
+                for line in f:
+                    ls = line.strip()
+                    if ls:
+                        if "#" in ls:
+                            continue
+                        else:
+                            DI_ct_p = []
+                            l = re.split('\t',ls)
+                            l = [e for e in l if e]
+                            #print(l)
+                            for s in l:
+                                DI_cti = float(s)
+                                DI_ct_p.append(DI_cti)
+                            DI_ct_p = np.asarray(DI_ct_p)
+                        DI_ct.append(DI_ct_p)
 
 
 
         finj_ct = []
-        filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_finj_ct.txt'
+        if case == 'mu_fit':
+            filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_finj_ct.txt'
+        else:
+            filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_finj_ct.txt'
         with open(filename) as f:
             for line in f:
                 ls = line.strip()
