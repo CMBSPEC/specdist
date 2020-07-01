@@ -20,8 +20,26 @@ class firas:
             firas_residual = np.append(firas_residual, float(line.split()[2]))
             firas_sigma = np.append(firas_sigma, float(line.split()[3])*1e-3)
             firas_Gnu = np.append(firas_Gnu, float(line.split()[4])*1e-3)
+    firas_nu_cm = firas_nu
     firas_nu = np.asarray(firas_nu)*clight*1.e2 # in s^-1
     firas_x = hplanck*firas_nu/kb/firas_T0_bf
+
+
+    firas_covmat = np.zeros((len(firas_x),len(firas_x)))
+    nu_minus_nuprime = firas_nu_cm - firas_nu_cm[0]
+    firas_Q = np.array([1.000, 0.176,-0.203, 0.145, 0.077,-0.005,-0.022, 0.032, 0.053, 0.025,-0.003, 0.007, 0.029, 0.029, 0.003,-0.002, 0.016, 0.020, 0.011, 0.002, 0.007, 0.011, 0.009, 0.003,-0.004,-0.001, 0.003, 0.003,-0.001,-0.003, 0.000, 0.003, 0.009, 0.015, 0.008, 0.003,-0.002, 0.000,-0.006,-0.006, 0.000, 0.002, 0.008])
+
+    #print(nu_minus_nuprime)
+
+    for inu in range(len(firas_nu)):
+        for inuprime in range(len(firas_nu)):
+            nu  = firas_nu_cm[inu]
+            nuprime  = firas_nu_cm[inuprime]
+            r = round(np.abs(nu-nuprime),4)
+            iq = (np.abs(nu_minus_nuprime - r)).argmin()
+            #iq = np.where(np.roll(nu_minus_nuprime,inu) == r)
+            #print(inu,inuprime,iq)
+            firas_covmat[inu][inuprime] = firas_sigma[inu]*firas_sigma[inuprime]*firas_Q[iq]
 
 
     firas_nu_min_in_GHz = np.min(firas_nu)/1e9
@@ -32,5 +50,8 @@ class firas:
 
     firas_mu_1996_95_cl = 9.e-5
     firas_y_1996_95_cl = 15.e-6
+
+    firas_mu_1996_systematic_stddev = 1e-5
+    firas_y_1996_systematic_stddev = 4e-6
 
     firas_Drho_rho_1996_95_cl = 6e-5 #approx 4*firas_y_1996=6e-05, firas_mu_1996/1.401
