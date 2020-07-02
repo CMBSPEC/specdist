@@ -3,6 +3,8 @@ from .cosmology import *
 from .cosmotherm_wrapper import *
 from .specdist_functions import *
 
+
+#Particle mass in eV, m/1eV = 4.698*10^-4 x_inj
 class dm_particle:
     f_gamma = 2
     f_dm = 1.
