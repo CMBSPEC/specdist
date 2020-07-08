@@ -1,6 +1,6 @@
 from .config import *
 from .utils import *
-from .firas_data import firas
+from .firas_data import *
 from .edges_data import edges
 from .standard_mu_and_y_distortions import *
 from .cosmotherm_wrapper import *
