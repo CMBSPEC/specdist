@@ -27,6 +27,7 @@ class firas:
 
 
         self.firas_covmat = np.zeros((len(self.firas_nu),len(self.firas_nu)))
+        self.firas_covmat_r = np.zeros((len(self.firas_nu),len(self.firas_nu)))
         nu_minus_nuprime = self.firas_nu_cm - self.firas_nu_cm[0]
         self.firas_Q = np.array([1.000, 0.176,-0.203, 0.145, 0.077,-0.005,-0.022, 0.032, 0.053, 0.025,-0.003, 0.007, 0.029, 0.029, 0.003,-0.002, 0.016, 0.020, 0.011, 0.002, 0.007, 0.011, 0.009, 0.003,-0.004,-0.001, 0.003, 0.003,-0.001,-0.003, 0.000, 0.003, 0.009, 0.015, 0.008, 0.003,-0.002, 0.000,-0.006,-0.006, 0.000, 0.002, 0.008])
 
@@ -38,9 +39,8 @@ class firas:
                 nuprime  = self.firas_nu_cm[inuprime]
                 r = round(np.abs(nu-nuprime),4)
                 iq = (np.abs(nu_minus_nuprime - r)).argmin()
-                #iq = np.where(np.roll(nu_minus_nuprime,inu) == r)
-                #print(inu,inuprime,iq)
                 self.firas_covmat[inu][inuprime] = self.firas_sigma[inu]*self.firas_sigma[inuprime]*self.firas_Q[iq]
+                self.firas_covmat_r[inu][inuprime] = self.firas_Q[iq]
 
 
         self.firas_nu_min_in_GHz = np.min(self.firas_nu)/1e9
