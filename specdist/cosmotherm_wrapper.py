@@ -178,7 +178,7 @@ class cosmotherm:
                                 np.savetxt(f,[row],fmt="%.3e",delimiter='\t')
                         f.close()
                         with open(path_to_ct_spectra_results+'/'+self.save_dir_name + '/spectra_' + self.save_dir_name  + '_Xe_values_ct.txt', 'w') as f:
-                            f.write("# arrays of redshift values for free electron fraction Xe\n")
+                            f.write("# arrays of Xe values for free electron fraction Xe\n")
                             for row in Xe_values_ct:
                                 np.savetxt(f,[row],fmt="%.3e",delimiter='\t')
                         f.close()

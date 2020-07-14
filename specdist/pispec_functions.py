@@ -45,6 +45,23 @@ def find_Gamma_inj_for_injection_redshift_zX(zX,cosmo,cosmotherm):
     return root
 
 
+def high_redshift_f_dm_limit(mu_lim,cosmo,cosmotherm,dm_particle,*args,**kwargs):
+    N_int = kwargs.get('N_int', 50)
+    # def f(ln_fdm):
+    #     f_dm = np.exp(ln_fdm)
+    #     dm_particle.f_dm = f_dm
+    #     mui = np.abs(mu_continuous_injection(cosmo,cosmotherm,dm_particle,N_int = N_int)['value'])
+    #     return mui-mu_lim
+    # root = np.exp(optimize.brentq(f, np.log(1e-100), np.log(1e100)))
+    # return mu_lim
+
+    dm_particle.f_dm = 1.
+    mui = mu_continuous_injection(cosmo,cosmotherm,dm_particle,N_int = N_int)['value']
+    #return mui-mu_lim
+    #root = np.exp(optimize.brentq(f, np.log(1e-100), np.log(1e100)))
+    return mu_lim/mui
+
+
 
 def mu_instantaneous_injection(zi,cosmo,cosmotherm,dm_particle):
     x_0 = 4./3./a_rho
@@ -58,6 +75,9 @@ def mu_instantaneous_injection(zi,cosmo,cosmotherm,dm_particle):
     #term_2 = 3.*a_rho/kappa_c*(x_i-x_0)*visibility_J_bb_star(zi,cosmo)*DN_N
     term_2 = 3.*a_rho/kappa_c*(x_i-x_0*P_s)*visibility_J_bb_star(zi,cosmo)*DN_N
     return term_1 + term_2
+
+
+
 
 def dmu_dt_continuous_injection(zi,cosmo,**kwargs):
     ct = kwargs['cosmotherm']
@@ -73,7 +93,8 @@ def dmu_dt_continuous_injection(zi,cosmo,**kwargs):
     term_2 = 3.*a_rho/kappa_c*(x_i-x_0*P_s)*visibility_J_bb_star(zi,cosmo)*DN_N
     return term_1 + term_2
 
-def mu_continuous_injection(cosmo,cosmotherm,dm_particle):
+def mu_continuous_injection(cosmo,cosmotherm,dm_particle,*args,**kwargs):
+    N_int = kwargs.get('N_int', 50)
     dict = {}
     dict['cosmotherm']=cosmotherm
     dict['dm_particle']=dm_particle
@@ -85,7 +106,7 @@ def mu_continuous_injection(cosmo,cosmotherm,dm_particle):
         return result
 
     #trapezoidal rule
-    nz = int(50)
+    nz = int(N_int)
     ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
     Ip = []
     int_array_xp = []
@@ -102,6 +123,10 @@ def mu_continuous_injection(cosmo,cosmotherm,dm_particle):
     r_dict['value']=result[0]
     r_dict['err'] = result[1]
     return r_dict
+
+
+
+
 
 
 def dI_dln1pz_of_z(z,cosmo,cosmotherm):
