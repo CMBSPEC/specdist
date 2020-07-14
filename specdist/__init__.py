@@ -6,6 +6,7 @@ from .standard_mu_and_y_distortions import *
 from .cosmotherm_wrapper import *
 from .cosmology import *
 from .pispec_functions import *
+from .pispec_run_fisher_constraints import *
 from .specdist_functions import *
 from .greens_functions import *
 from .interpolate_ct_spectra import *
