@@ -15,6 +15,7 @@ class cosmotherm:
         self.ct_lyc = 0
         self.ct_evolve_Xe = 0
         self.ct_pi_redshift_evolution_mode = 0
+        self.ct_pi_finj_mode = 0
         self.ct_include_pi = 1 #photon injection case
         self.ct_reionisation_model = 0
         self.ct_emission_absorption_mode = 0
@@ -78,25 +79,37 @@ class cosmotherm:
                 r_dict = {**r_dict, **l_dict}
             else:
                 R = np.loadtxt(p_dict['path for output']+'Dn.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-                r_dict['x'] = R[:,0]
-                r_dict['DI'] = R[:,5]
-                if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
-                    R = np.loadtxt(p_dict['path for output']+'Xe_Xp_etc.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-                    r_dict['Xe_redshifts'] = R[:,0]
-                    r_dict['Xe_values'] = R[:,6]
-                if self.ct_include_pi == 1:
-                    f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-                    lines = f.readlines()
-                    for line in lines:
-                        if 'finj' in line:
-                            for t in line.split():
-                                try:
-                                    finj = float(line.split()[2])
-                                except ValueError:
-                                    print('error for process %d, f_inj not found'%index_pval)
-                                    pass
-                    f.close()
-                    r_dict['finj'] = finj
+                try:
+                    r_dict['x'] = R[:,0]
+                    r_dict['DI'] = R[:,5]
+                    if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
+                        R = np.loadtxt(p_dict['path for output']+'Xe_Xp_etc.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                        r_dict['Xe_redshifts'] = R[:,0]
+                        r_dict['Xe_values'] = R[:,6]
+                    if self.ct_include_pi == 1:
+                        f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                        lines = f.readlines()
+                        for line in lines:
+                            if 'finj' in line:
+                                for t in line.split():
+                                    try:
+                                        finj = float(line.split()[2])
+                                    except ValueError:
+                                        print('error for process %d, f_inj not found'%index_pval)
+                                        pass
+                        f.close()
+                        r_dict['finj'] = finj
+                except IndexError:
+                    a = np.empty(1)
+                    a[:] = np.nan
+                    r_dict['x'] = a
+                    r_dict['DI'] = a
+                    if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
+                        r_dict['Xe_redshifts'] = a
+                        r_dict['Xe_values'] = a
+                    if self.ct_include_pi == 1:
+                        r_dict['finj'] = a[0] 
+
         #print(r_dict)
         return r_dict
 
@@ -227,6 +240,7 @@ class cosmotherm:
         p_dict['evolve Xe'] = self.ct_evolve_Xe
         p_dict['Reionization model'] = self.ct_reionisation_model
         p_dict['photon injection redshift evolution'] = self.ct_pi_redshift_evolution_mode
+        p_dict['photon injection finj mode'] = self.ct_pi_finj_mode
         p_dict['emission/absorption mode'] = self.ct_emission_absorption_mode
         p_dict['pi_f_dm'] = self.ct_fdm
         return p_dict

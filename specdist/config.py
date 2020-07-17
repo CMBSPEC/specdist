@@ -2,6 +2,7 @@ import subprocess
 
 
 path_to_sd_projects = "/Users/boris/Work/SPECTRAL-DISTORTIONS/"
+#path_to_sd_projects = "/scratch/nas_chluba/specdist/bolliet/cosmotherm_projects/"
 
 #path to the cosmotherm database
 path_to_ct_database = path_to_sd_projects + "specdist/specdist/data/ct_database/"

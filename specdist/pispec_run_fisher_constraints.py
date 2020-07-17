@@ -77,7 +77,7 @@ def pi_run_fisher_constraints(Gamma_values,xi_array,sd_lib,*args,**kwargs):
         I_edges = B_nu_of_T(edges.edges_nu,T_pivot)
         firas.firas_x = np.insert(firas.firas_x,0,edges.edges_x)
         firas_galaxy = np.insert(firas_galaxy,0,0.)
-        firas_delta_monopole.append(dB_nu_dT_at_T(edges.edges_nu,T_pivot))
+        firas_delta_monopole = np.insert(firas_delta_monopole,0,dB_nu_dT_at_T(edges.edges_nu,T_pivot))
         cov_edges = [[(2.*I_edges)**2.]]
         covmat_data = block_diag(cov_edges, covmat_data)
 

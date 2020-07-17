@@ -105,4 +105,11 @@ G1 = np.pi**2./6
 G2 = 2.4041
 G3 = np.pi**4/15.
 a_rho = G2/G3
-alpha_mu = 2.*G1/3./G2 # = 1/beta_mu = π^2/18ζ(3) see eq. 4.15 CUSO lectures. 
+alpha_mu = 2.*G1/3./G2 # = 1/beta_mu = π^2/18ζ(3) see eq. 4.15 CUSO lectures.
+
+z_mu_era = 3e5
+z_y_era = 5e4
+z_reio_min = 6
+z_reio_max = 25
+z_recombination_min = 800
+z_recombination_max = 1500 
