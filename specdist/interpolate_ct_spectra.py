@@ -56,8 +56,8 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.N_x_inj = 50
         specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
 
-    elif case == 'xe_history':
-        specdist_ct_spectra_lib.case_id = "case_xe_history"
+    elif 'xe_history' in case:
+        specdist_ct_spectra_lib.case_id = "case_" + case
         specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
         specdist_ct_spectra_lib.Gamma_inj_max = 1e-12
         specdist_ct_spectra_lib.N_Gamma_inj = 10
@@ -72,7 +72,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         print('this case has not been computed. Computed cases are "lyc" or "bare".')
         return
     specdist_ct_spectra_lib.path_to_spectra  = path_to_ct_database + specdist_ct_spectra_lib.case_id
-    if case == 'xe_history':
+    if 'xe_history' in case :
         specdist_ct_spectra_lib.path_to_spectra  = path_to_ct_database + specdist_ct_spectra_lib.case_id + '/' + case
 
     if case == 'raw_lyc_reio':
@@ -91,7 +91,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         x_ct = []
         if case == 'mu_fit':
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_x_ct.txt'
-        elif case == 'xe_history':
+        elif 'xe_history' in case:
             filename = specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma + '_x_ct.txt'
         else:
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_x_ct.txt'
@@ -154,7 +154,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
                         DI_ct_hubble.append(DI_ct_p)
             for (p_bare,p_hubble) in zip(DI_ct_bare,DI_ct_hubble):
                 DI_ct.append(p_bare-p_hubble)
-        elif case == 'xe_history':
+        elif 'xe_history' in case:
             DI_ct_bare = []
             DI_ct_hubble = []
             filename = specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma  + '_DI_ct.txt'
@@ -217,7 +217,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         finj_ct = []
         if case == 'mu_fit':
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_finj_ct.txt'
-        elif case == 'xe_history':
+        elif 'xe_history' in case:
             specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma  + '_finj_ct.txt'
         else:
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_finj_ct.txt'

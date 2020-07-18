@@ -107,7 +107,9 @@ def mu_continuous_injection(cosmo,cosmotherm,dm_particle,*args,**kwargs):
 
     #trapezoidal rule
     nz = int(N_int)
-    ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+cosmo.z_end)),nz)
+    zend_gamma = cosmo.z_of_t(10.*1./dm_particle.Gamma_inj)
+    zend = max(cosmo.z_end,zend_gamma)
+    ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+zend)),nz)
     Ip = []
     int_array_xp = []
     a_args = (cosmo,dict)

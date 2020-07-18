@@ -11,17 +11,18 @@ cosmo = sd.cosmo()
 X_dm = sd.dm_particle()
 
 
+if finj_from_fisher == 'yes':
+    firas = sd.firas()
+    edges = sd.edges()
+    a_dict = {}
+    a_dict['firas'] = firas
+    a_dict['edges'] = edges
+    a_dict['add_edges'] = 'yes'
+    sd_lib = sd.specdist_ct_spectra_lib()
+    sd.load_ct_spectra_lib(photon_injection_case,sd_lib)
 
-sd_lib = sd.specdist_ct_spectra_lib()
-sd.load_ct_spectra_lib(photon_injection_case,sd_lib)
 
 
-firas = sd.firas()
-edges = sd.edges()
-a_dict = {}
-a_dict['firas'] = firas
-a_dict['edges'] = edges
-a_dict['add_edges'] = 'yes'
 
 # set relevant parameter values
 ct.ct_Drho_rho_dec = 1e-300

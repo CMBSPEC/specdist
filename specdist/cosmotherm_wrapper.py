@@ -108,7 +108,7 @@ class cosmotherm:
                         r_dict['Xe_redshifts'] = a
                         r_dict['Xe_values'] = a
                     if self.ct_include_pi == 1:
-                        r_dict['finj'] = a[0] 
+                        r_dict['finj'] = a[0]
 
         #print(r_dict)
         return r_dict
@@ -177,7 +177,7 @@ class cosmotherm:
                     with open(path_to_ct_spectra_results+'/'+self.save_dir_name + '/spectra_' + self.save_dir_name  + '_DI_ct.txt', 'w') as f:
                         f.write("# arrays of DI values for CT spectra\n")
                         for row in DI_ct:
-                            np.savetxt(f,[row],fmt="%.3e",delimiter='\t')
+                            np.savetxt(f,[row],fmt="%.8e",delimiter='\t')
                     f.close()
                     with open(path_to_ct_spectra_results+'/'+self.save_dir_name + '/spectra_' + self.save_dir_name  + '_x_ct.txt', 'w') as f:
                         f.write("# arrays of x=hnu/kT values for CT spectra\n")
