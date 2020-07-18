@@ -1,9 +1,19 @@
 import specdist as sd
 import numpy as np
 
+photon_injection_case = 'xe_history_170720'
+compute_hubble_dist = 'yes'
+
 finj_from_fisher = 'no'
 add_edges = 'yes'
-photon_injection_case = 'lyc_reio'
+
+
+if compute_hubble_dist == 'yes':
+    Drho_rho = 1e-100
+    photon_injection_case += '_hubble'
+else:
+    Drho_rho = 3e-5
+
 
 # load photon injection and cosmotherm modules
 ct = sd.cosmotherm()
@@ -25,14 +35,14 @@ if finj_from_fisher == 'yes':
 
 
 # set relevant parameter values
-ct.ct_Drho_rho_dec = 1e-300
+ct.ct_Drho_rho_dec = Drho_rho
 # ct.ct_h = 0.70
 # ct.ct_Omega_b = 0.0457
 # ct.ct_Omega_m = 0.30
 ct.ct_emission_absorption_mode = 0
 ct.ct_npts = 5000
-ct.ct_zend = 1.1e6
-ct.ct_zstart = 2e6
+ct.ct_zend = 1e-2
+ct.ct_zstart = 5e6
 
 ct.ct_include_pi = 1
 ct.ct_evolve_Xe = 1
@@ -45,14 +55,14 @@ sd.set_cosmo_to_CT_cosmo_params(cosmo,ct)
 
 xi_array = np.logspace(np.log10(1e-8),np.log10(1.e7),64)
 #xi_array = np.logspace(np.log10(1e-8),np.log10(1.e7),64)
-xi_array = [1e-6]
+#xi_array = [1e-6]
 #Gamma_X = 1e-6 #np.logspace(-9,-6,4)
 #zi_array = [1.1e6,9.9e5]
-for Gamma_X in [np.logspace(-12,-17,10)[0]]:
+for Gamma_X in np.logspace(-12,-17,10):
     str_gamma = str("%.3e"%Gamma_X)
 
     ct.ct_Gamma_dec = Gamma_X
-    ct.ct_x_dec = 1e7
+    #ct.ct_x_dec = 1e7
 
     if finj_from_fisher == 'yes':
         Gamma_values = [ct.ct_Gamma_dec]
@@ -63,7 +73,7 @@ for Gamma_X in [np.logspace(-12,-17,10)[0]]:
         print('finj_fisher = %e'%ct.ct_photon_injection_f_dec)
     else:
         ct.ct_photon_injection_f_dec = 0.
-        print('not using finj')
+        print('not using finj, using Drho_rho instead.')
 
 
 
@@ -75,7 +85,7 @@ for Gamma_X in [np.logspace(-12,-17,10)[0]]:
     args['param_values_array'] = p_array
     args['param_name'] = p_name
     args['save_spectra'] = 'yes'
-    ct.save_dir_name = 'xe_history_hubble' + '_G_' + str_gamma
+    ct.save_dir_name = photon_injection_case + '_G_' + str_gamma
 
     R = ct.run_cosmotherm_parallel(**args)
-print(R)
+#print(R)
