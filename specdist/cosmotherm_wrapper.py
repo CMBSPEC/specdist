@@ -30,6 +30,7 @@ class cosmotherm:
         self.save_Xe = 'no'
         self.ct_fdm = 0
         self.get_finj = 0
+        self.ct_pi_energy_norm = 0
 
         self.path_to_ct_param_file = path_to_cosmotherm + '/runfiles/'
         self.tmp_dir_name = 'tmp'
@@ -241,6 +242,7 @@ class cosmotherm:
         p_dict['Reionization model'] = self.ct_reionisation_model
         p_dict['photon injection redshift evolution'] = self.ct_pi_redshift_evolution_mode
         p_dict['photon injection finj mode'] = self.ct_pi_finj_mode
+        p_dict['photon injection energy norm'] = self.ct_pi_energy_norm
         p_dict['emission/absorption mode'] = self.ct_emission_absorption_mode
         p_dict['pi_f_dm'] = self.ct_fdm
         return p_dict

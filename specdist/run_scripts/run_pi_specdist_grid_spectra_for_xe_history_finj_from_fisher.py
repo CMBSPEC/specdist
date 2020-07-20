@@ -1,8 +1,8 @@
 import specdist as sd
 import numpy as np
 
-photon_injection_case = 'xe_history_170720'
-compute_hubble_dist = 'yes'
+photon_injection_case = 'xe_history_180720'
+compute_hubble_dist = 'no'
 
 finj_from_fisher = 'no'
 add_edges = 'yes'

@@ -243,7 +243,6 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
 
 
 
-
 def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
     r1 = (Gamma_inj_asked - specdist_ct_spectra_lib.Gamma_inj_min)
     r2 = (specdist_ct_spectra_lib.Gamma_inj_max - Gamma_inj_asked)
@@ -251,6 +250,7 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
     r4 = (specdist_ct_spectra_lib.x_inj_max - x_inj_asked)
 
     if (r1 < 0) or (r2 < 0) or (r3 < 0) or (r4 < 0):
+        print('filling with nans')
         array_x_asked =  np.empty(len(x_asked))
         array_x_asked[:] = np.nan
         array_S_result = np.empty(len(x_asked))
@@ -273,6 +273,8 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
         id_xinj_low = find_nearests(x_inj_values, x_inj_asked)[0]
         id_xinj_high = find_nearests(x_inj_values, x_inj_asked)[1]
 
+        #print(id_gamma_low,id_gamma_high,id_xinj_low,id_xinj_high)
+
         #DI_2d[id_gamma_low][id_xinj_low]  #DI_2d[id_gamma_low][id_xinj_high]
         #X_2d[id_gamma_low][id_xinj_low]   #X_2d[id_gamma_low][id_xinj_high]
 
@@ -288,6 +290,8 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
         "spectra": S,
         "finj": F
         }
+
+        #print(F)
 
         gamma_low = dict["gamma_low"]
         gamma_high = dict["gamma_high"]
@@ -309,99 +313,117 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
         Gamma_asked = Gamma_inj_asked
         xinj_asked = x_inj_asked
 
-
-        nx = int(1e4)
-
-
-        ############### xinj_low
-        new_x_min = np.maximum(np.min(S_gamma_low_xinj_low[0]),np.min(S_gamma_high_xinj_low[0]))
-        new_x_max = np.minimum(np.max(S_gamma_low_xinj_low[0]),np.max(S_gamma_high_xinj_low[0]))
-        new_x_array = np.logspace(np.log10(new_x_min),np.log10(new_x_max),nx)
-        new_x_array = new_x_array[1:-1]
-
-        f_gamma_low = interp1d(S_gamma_low_xinj_low[0], S_gamma_low_xinj_low[1])
-        f_gamma_high = interp1d(S_gamma_high_xinj_low[0], S_gamma_high_xinj_low[1])
-
-        new_S_gamma_low = f_gamma_low(new_x_array)
-        new_S_gamma_high = f_gamma_high(new_x_array)
-
-        #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
-        w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
-        new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
-
-
-
-        S_gamma_asked_xinj_low = [[],[]]
-        S_gamma_asked_xinj_low[0] = new_x_array
-        S_gamma_asked_xinj_low[1] = new_S_gamma_asked
-
-        F_gamma_asked_xinj_low = w*F_gamma_low_xinj_low + (1.-w)*F_gamma_high_xinj_low
-
-        ############# xinj_high
-
-        new_x_min = np.maximum(np.min(S_gamma_low_xinj_high[0]),np.min(S_gamma_high_xinj_high[0]))
-        new_x_max = np.minimum(np.max(S_gamma_low_xinj_high[0]),np.max(S_gamma_high_xinj_high[0]))
-        new_x_array = np.logspace(np.log10(new_x_min),np.log10(new_x_max),nx)
-        new_x_array = new_x_array[1:-1]
-
-        f_gamma_low = interp1d(S_gamma_low_xinj_high[0], S_gamma_low_xinj_high[1])
-        f_gamma_high = interp1d(S_gamma_high_xinj_high[0], S_gamma_high_xinj_high[1])
-
-        new_S_gamma_low = f_gamma_low(new_x_array)
-        new_S_gamma_high = f_gamma_high(new_x_array)
-
-        #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
-        w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
-        new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
-
-        S_gamma_asked_xinj_high = [[],[]]
-        S_gamma_asked_xinj_high[0] = new_x_array
-        S_gamma_asked_xinj_high[1] = new_S_gamma_asked
-
-        F_gamma_asked_xinj_high = w*F_gamma_low_xinj_low + (1.-w)*F_gamma_high_xinj_high
-
-        ############# interpolation between xinjs
-        new_x_min = np.maximum(np.min(S_gamma_asked_xinj_low[0]),np.min(S_gamma_asked_xinj_high[0]))
-        new_x_max = np.minimum(np.max(S_gamma_asked_xinj_low[0]),np.max(S_gamma_asked_xinj_high[0]))
-        new_x_array = np.logspace(np.log10(new_x_min),np.log10(new_x_max),nx)
-        new_x_array = new_x_array[1:-1]
-
-        f_xinj_low = interp1d(S_gamma_asked_xinj_low[0], S_gamma_asked_xinj_low[1])
-        f_xinj_high = interp1d(S_gamma_asked_xinj_high[0], S_gamma_asked_xinj_high[1])
-
-        new_S_xinj_low = f_xinj_low(new_x_array)
-        new_S_xinj_high = f_xinj_high(new_x_array)
-
-        #w = (xinj_high - xinj_asked)/(xinj_high - xinj_low)
-        w = (np.log(xinj_high) - np.log(xinj_asked))/(np.log(xinj_high) - np.log(xinj_low))
-        new_S_xinj_asked = w*new_S_xinj_low + (1.-w)*new_S_xinj_high
-
-        S_gamma_asked_xinj_asked = [[],[]]
-        S_gamma_asked_xinj_asked[0] = new_x_array
-        S_gamma_asked_xinj_asked[1] = new_S_xinj_asked
-
-        F_gamma_asked_xinj_asked = w*F_gamma_asked_xinj_low + (1.-w)*F_gamma_asked_xinj_high
+        #check if nan in any of the arrays:
+        Arrays_list = [S_gamma_low_xinj_low,
+                      S_gamma_low_xinj_high,
+                      S_gamma_high_xinj_low,
+                      S_gamma_high_xinj_high]
+        has_nan = False
+        for p in Arrays_list:
+            array = p
+            array_sum = np.sum(array)
+            has_nan += np.isnan(array_sum)
+        if has_nan:
+            print('filling with nans')
+            array_x_asked =  np.empty(len(x_asked))
+            array_x_asked[:] = np.nan
+            array_S_result = np.empty(len(x_asked))
+            array_S_result[:] =  np.nan
+            F_gamma_asked_xinj_asked = np.nan
+        else:
+            nx = int(1e4)
 
 
-        f_gamma_asked_xinj_asked = interp1d(S_gamma_asked_xinj_asked[0], S_gamma_asked_xinj_asked[1])
-        ########### get spectra at required x values
-        bound_x_min = np.min(S_gamma_asked_xinj_asked[0])
-        bound_x_max = np.max(S_gamma_asked_xinj_asked[0])
+            ############### xinj_low
+            new_x_min = np.maximum(np.min(S_gamma_low_xinj_low[0]),np.min(S_gamma_high_xinj_low[0]))
+            new_x_max = np.minimum(np.max(S_gamma_low_xinj_low[0]),np.max(S_gamma_high_xinj_low[0]))
+            new_x_array = np.logspace(np.log10(new_x_min),np.log10(new_x_max),nx)
+            new_x_array = new_x_array[1:-1]
 
-        array_x_asked = np.asarray(x_asked)
 
-        min_x_asked = np.min(array_x_asked)
-        max_x_asked = np.max(array_x_asked)
+            f_gamma_low = interp1d(S_gamma_low_xinj_low[0], S_gamma_low_xinj_low[1])
+            f_gamma_high = interp1d(S_gamma_high_xinj_low[0], S_gamma_high_xinj_low[1])
 
-        id_min = 0
-        id_max = None
-        if min_x_asked < bound_x_min:
-            id_min = find_nearests(array_x_asked, bound_x_min)[1]
-        if max_x_asked > bound_x_max:
-            id_max = find_nearests(array_x_asked, bound_x_max)[0]
-        array_x_asked = array_x_asked[id_min:id_max]
+            new_S_gamma_low = f_gamma_low(new_x_array)
+            new_S_gamma_high = f_gamma_high(new_x_array)
 
-        array_S_result = f_gamma_asked_xinj_asked(array_x_asked)
+            #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+            w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
+            new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
+
+
+
+            S_gamma_asked_xinj_low = [[],[]]
+            S_gamma_asked_xinj_low[0] = new_x_array
+            S_gamma_asked_xinj_low[1] = new_S_gamma_asked
+
+            F_gamma_asked_xinj_low = w*F_gamma_low_xinj_low + (1.-w)*F_gamma_high_xinj_low
+
+            ############# xinj_high
+
+            new_x_min = np.maximum(np.min(S_gamma_low_xinj_high[0]),np.min(S_gamma_high_xinj_high[0]))
+            new_x_max = np.minimum(np.max(S_gamma_low_xinj_high[0]),np.max(S_gamma_high_xinj_high[0]))
+            new_x_array = np.logspace(np.log10(new_x_min),np.log10(new_x_max),nx)
+            new_x_array = new_x_array[1:-1]
+
+            f_gamma_low = interp1d(S_gamma_low_xinj_high[0], S_gamma_low_xinj_high[1])
+            f_gamma_high = interp1d(S_gamma_high_xinj_high[0], S_gamma_high_xinj_high[1])
+
+            new_S_gamma_low = f_gamma_low(new_x_array)
+            new_S_gamma_high = f_gamma_high(new_x_array)
+
+            #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+            w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
+            new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
+
+            S_gamma_asked_xinj_high = [[],[]]
+            S_gamma_asked_xinj_high[0] = new_x_array
+            S_gamma_asked_xinj_high[1] = new_S_gamma_asked
+
+            F_gamma_asked_xinj_high = w*F_gamma_low_xinj_low + (1.-w)*F_gamma_high_xinj_high
+
+            ############# interpolation between xinjs
+            new_x_min = np.maximum(np.min(S_gamma_asked_xinj_low[0]),np.min(S_gamma_asked_xinj_high[0]))
+            new_x_max = np.minimum(np.max(S_gamma_asked_xinj_low[0]),np.max(S_gamma_asked_xinj_high[0]))
+            new_x_array = np.logspace(np.log10(new_x_min),np.log10(new_x_max),nx)
+            new_x_array = new_x_array[1:-1]
+
+            f_xinj_low = interp1d(S_gamma_asked_xinj_low[0], S_gamma_asked_xinj_low[1])
+            f_xinj_high = interp1d(S_gamma_asked_xinj_high[0], S_gamma_asked_xinj_high[1])
+
+            new_S_xinj_low = f_xinj_low(new_x_array)
+            new_S_xinj_high = f_xinj_high(new_x_array)
+
+            #w = (xinj_high - xinj_asked)/(xinj_high - xinj_low)
+            w = (np.log(xinj_high) - np.log(xinj_asked))/(np.log(xinj_high) - np.log(xinj_low))
+            new_S_xinj_asked = w*new_S_xinj_low + (1.-w)*new_S_xinj_high
+
+            S_gamma_asked_xinj_asked = [[],[]]
+            S_gamma_asked_xinj_asked[0] = new_x_array
+            S_gamma_asked_xinj_asked[1] = new_S_xinj_asked
+
+            F_gamma_asked_xinj_asked = w*F_gamma_asked_xinj_low + (1.-w)*F_gamma_asked_xinj_high
+
+
+            f_gamma_asked_xinj_asked = interp1d(S_gamma_asked_xinj_asked[0], S_gamma_asked_xinj_asked[1])
+            ########### get spectra at required x values
+            bound_x_min = np.min(S_gamma_asked_xinj_asked[0])
+            bound_x_max = np.max(S_gamma_asked_xinj_asked[0])
+
+            array_x_asked = np.asarray(x_asked)
+
+            min_x_asked = np.min(array_x_asked)
+            max_x_asked = np.max(array_x_asked)
+
+            id_min = 0
+            id_max = None
+            if min_x_asked < bound_x_min:
+                id_min = find_nearests(array_x_asked, bound_x_min)[1]
+            if max_x_asked > bound_x_max:
+                id_max = find_nearests(array_x_asked, bound_x_max)[0]
+            array_x_asked = array_x_asked[id_min:id_max]
+
+            array_S_result = f_gamma_asked_xinj_asked(array_x_asked)
 
     r_dict = {"x":array_x_asked,
               "DI": array_S_result,
