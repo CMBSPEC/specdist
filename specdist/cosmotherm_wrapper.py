@@ -1,5 +1,6 @@
 from .config import *
 from .utils import *
+from .pispec_run_fisher_constraints import *
 
 
 class cosmotherm:
@@ -31,6 +32,7 @@ class cosmotherm:
         self.ct_fdm = 0
         self.get_finj = 0
         self.ct_pi_energy_norm = 0
+        self.ct_pi_finj_from_fisher = 'no'
 
         self.path_to_ct_param_file = path_to_cosmotherm + '/runfiles/'
         self.tmp_dir_name = 'tmp'
@@ -91,7 +93,7 @@ class cosmotherm:
                         f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
                         lines = f.readlines()
                         for line in lines:
-                            if 'finj' in line:
+                            if 'finj =' in line:
                                 for t in line.split():
                                     try:
                                         finj = float(line.split()[2])
@@ -114,12 +116,20 @@ class cosmotherm:
         #print(r_dict)
         return r_dict
 
-    def compute_specdist_parallel(self,index_pval,param_values_array,param_name):
+    def compute_specdist_parallel(self,index_pval,param_values_array,param_name,**kwargs):
+
+        dict_for_fisher = kwargs.get('dict_for_fisher')
+        sd_lib_for_fisher = kwargs.get('sd_lib_for_fisher', None)
+
         p_val = param_values_array[index_pval]
         params_values_dict = self.load_parameter_file()
         params_values_dict[param_name] = p_val
         if float(params_values_dict['pi_f_dm']) != 0 and float(params_values_dict['photon injection f_dec']) == 0:
             params_values_dict['photon injection f_dec'] = 1.3098e4*float(params_values_dict['pi_f_dm'])/float(params_values_dict['photon injection x_dec'])*(self.ct_omega_cdm/0.12)*(float(params_values_dict['T0'])/2.726)**-4
+        if params_values_dict['pi_finj_from_fisher'] == 'yes':
+            f_dm_fisher = pi_run_fisher_constraints([float(params_values_dict['photon injection Gamma_dec'])],[float(params_values_dict['photon injection x_dec'])],sd_lib_for_fisher,**dict_for_fisher)
+            params_values_dict['photon injection f_dec'] = f_dm_fisher['curves'][0]['finj'][0]
+            print('finj_fisher = %e'%params_values_dict['photon injection f_dec'])
         r_dict = self.compute_specdist(index_pval=index_pval,**params_values_dict)
         dict_ct_results = r_dict
         dict_param_values = {}
@@ -135,7 +145,8 @@ class cosmotherm:
             array_args = [args['param_values_array']]
         else:
             array_args = args['param_values_array']
-        fn=functools.partial(self.compute_specdist_parallel,param_values_array=array_args,param_name=args['param_name'])
+
+        fn=functools.partial(self.compute_specdist_parallel,param_values_array=array_args,param_name=args['param_name'],dict_for_fisher=args['dict_for_fisher'],sd_lib_for_fisher=args['sd_lib_for_fisher'])
         #print(len(*param_values_array))
         results = pool.map(fn,range(np.size(np.asarray(args['param_values_array']))))
         pool.close()
@@ -245,6 +256,7 @@ class cosmotherm:
         p_dict['photon injection energy norm'] = self.ct_pi_energy_norm
         p_dict['emission/absorption mode'] = self.ct_emission_absorption_mode
         p_dict['pi_f_dm'] = self.ct_fdm
+        p_dict['pi_finj_from_fisher'] = self.ct_pi_finj_from_fisher
         return p_dict
 
     def clear(self):
