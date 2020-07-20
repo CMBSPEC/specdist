@@ -56,6 +56,19 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.N_x_inj = 50
         specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
 
+    elif case == 'xe_history_200720':
+        specdist_ct_spectra_lib.case_id = "case_" + case
+        specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
+        specdist_ct_spectra_lib.Gamma_inj_max = 1e-12
+        specdist_ct_spectra_lib.N_Gamma_inj = 1
+        specdist_ct_spectra_lib.Gamma_values = np.logspace(np.log10(specdist_ct_spectra_lib.Gamma_inj_min),np.log10(specdist_ct_spectra_lib.Gamma_inj_max),specdist_ct_spectra_lib.N_Gamma_inj)
+
+        specdist_ct_spectra_lib.x_inj_min = 1e-8
+        specdist_ct_spectra_lib.x_inj_max = 1e7
+        specdist_ct_spectra_lib.N_x_inj = 200
+        specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
+
+
     elif 'xe_history' in case:
         specdist_ct_spectra_lib.case_id = "case_" + case
         specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
@@ -218,7 +231,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         if case == 'mu_fit':
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_finj_ct.txt'
         elif 'xe_history' in case:
-            specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma  + '_finj_ct.txt'
+            filename = specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma  + '_finj_ct.txt'
         else:
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_finj_ct.txt'
         with open(filename) as f:
@@ -250,7 +263,7 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
     r4 = (specdist_ct_spectra_lib.x_inj_max - x_inj_asked)
 
     if (r1 < 0) or (r2 < 0) or (r3 < 0) or (r4 < 0):
-        print('filling with nans')
+        #print('filling with nans')
         array_x_asked =  np.empty(len(x_asked))
         array_x_asked[:] = np.nan
         array_S_result = np.empty(len(x_asked))
@@ -300,6 +313,9 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
         S = dict["spectra"]
         F = dict["finj"]
 
+        #print(gamma_low)
+        #print(gamma_high)
+
         S_gamma_low_xinj_low = S[0]
         S_gamma_low_xinj_high = S[1]
         S_gamma_high_xinj_low = S[2]
@@ -324,7 +340,7 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
             array_sum = np.sum(array)
             has_nan += np.isnan(array_sum)
         if has_nan:
-            print('filling with nans')
+            #print('filling with nans')
             array_x_asked =  np.empty(len(x_asked))
             array_x_asked[:] = np.nan
             array_S_result = np.empty(len(x_asked))
@@ -347,9 +363,15 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
             new_S_gamma_low = f_gamma_low(new_x_array)
             new_S_gamma_high = f_gamma_high(new_x_array)
 
-            #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
-            w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
+            if gamma_low == Gamma_asked:
+                w = 1.
+            elif gamma_high == Gamma_asked:
+                w = 0.
+            else:
+                #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+                w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
             new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
+#             print('xinj _low : w_gamma = %.14e'%w)
 
 
 
@@ -372,9 +394,17 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
             new_S_gamma_low = f_gamma_low(new_x_array)
             new_S_gamma_high = f_gamma_high(new_x_array)
 
-            #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
-            w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
+            if gamma_low == Gamma_asked:
+                w = 1.
+            elif gamma_high == Gamma_asked:
+                w = 0.
+            else:
+                #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+                w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
+#             #w = (gamma_high - Gamma_asked)/(gamma_high - gamma_low)
+#             w = (np.log(gamma_high) - np.log(Gamma_asked))/(np.log(gamma_high) - np.log(gamma_low))
             new_S_gamma_asked = w*new_S_gamma_low + (1.-w)*new_S_gamma_high
+#             print('xinj _high : w_gamma = %.14e'%w)
 
             S_gamma_asked_xinj_high = [[],[]]
             S_gamma_asked_xinj_high[0] = new_x_array
@@ -396,6 +426,9 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
 
             #w = (xinj_high - xinj_asked)/(xinj_high - xinj_low)
             w = (np.log(xinj_high) - np.log(xinj_asked))/(np.log(xinj_high) - np.log(xinj_low))
+#             print('xinj_high = %.14e'%xinj_high)
+#             print('w_xinj = %.14e'%w)
+
             new_S_xinj_asked = w*new_S_xinj_low + (1.-w)*new_S_xinj_high
 
             S_gamma_asked_xinj_asked = [[],[]]
