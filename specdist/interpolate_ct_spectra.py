@@ -641,7 +641,7 @@ def GetSpectra(Gamma_inj_asked,x_inj_asked,x_asked,specdist_ct_spectra_lib):
 
 
 
-def GetXeHistory(Gamma_inj_asked,x_inj_asked,z_asked,specdist_ct_spectra_lib,omega_cdm=0.12,fdm_asked=1e0,get_pca_constraint='yes'):
+def GetXeHistory(Gamma_inj_asked,x_inj_asked,z_asked,specdist_ct_spectra_lib,omega_cdm=0.12,fdm_asked=0,get_pca_constraint='yes'):
     x_asked = z_asked
     r1 = (Gamma_inj_asked - specdist_ct_spectra_lib.Gamma_inj_min)
     r2 = (specdist_ct_spectra_lib.Gamma_inj_max - Gamma_inj_asked)
@@ -855,7 +855,10 @@ def GetXeHistory(Gamma_inj_asked,x_inj_asked,z_asked,specdist_ct_spectra_lib,ome
             array_S_result = f_gamma_asked_xinj_asked(array_x_asked)
     #print(F_gamma_asked_xinj_asked)
     fdm = 1./1.3098e4*F_gamma_asked_xinj_asked*x_inj_asked*(omega_cdm/0.12)**-1
-    array_DXe_Xe = array_S_result*fdm_asked/fdm
+    if fdm_asked == 0:
+        array_DXe_Xe = array_S_result
+    else:
+        array_DXe_Xe = array_S_result*fdm_asked/fdm
 
     #print(fdm)
     if get_pca_constraint == 'yes':
