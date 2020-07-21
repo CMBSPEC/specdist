@@ -38,6 +38,7 @@ class specdist_ct_spectra_lib:
         self.Xe_redshifts_no_inj_2d = []
 
         self.DXe_Xe_2d = []
+        self.DXe_Xe_redshifts_2d = []
         self.Xe_PCA_EigenModes = {}
         self.Xe_PCA_EigenModes['E1'] = {}
         self.Xe_PCA_EigenModes['E1']['z'] = []
@@ -72,7 +73,28 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.N_x_inj = 50
         specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
 
-    elif case == 'xe_history_200720' or case == 'xe_history_200720_finj_fisher':
+    elif case == 'xe_history_200720':
+        specdist_ct_spectra_lib.case_id = "case_" + case
+        specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
+        specdist_ct_spectra_lib.Gamma_inj_max = 1e-12
+        specdist_ct_spectra_lib.N_Gamma_inj = 10
+        specdist_ct_spectra_lib.Gamma_values = np.logspace(np.log10(specdist_ct_spectra_lib.Gamma_inj_min),np.log10(specdist_ct_spectra_lib.Gamma_inj_max),specdist_ct_spectra_lib.N_Gamma_inj)
+
+        specdist_ct_spectra_lib.x_inj_min = 1e-8
+        specdist_ct_spectra_lib.x_inj_max = 1e7
+        specdist_ct_spectra_lib.N_x_inj = 200
+        specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
+        E1 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_1.dat')
+        E2 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_2.dat')
+        E3 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_3.dat')
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['z'] = E1[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['z'] = E2[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['z'] = E3[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['values'] = E1[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['values'] = E2[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['values'] = E3[:,1]
+
+    elif case == 'xe_history_200720_finj_fisher':
         specdist_ct_spectra_lib.case_id = "case_" + case
         specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
         specdist_ct_spectra_lib.Gamma_inj_max = 1e-12
@@ -357,9 +379,55 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         if 'xe_history' in case:
             specdist_ct_spectra_lib.Xe_values_2d.append(Xe_values_ct)
             specdist_ct_spectra_lib.Xe_values_no_inj_2d.append(Xe_values_no_inj_ct)
+
             specdist_ct_spectra_lib.Xe_redshifts_2d.append(Xe_redshifts_ct)
             specdist_ct_spectra_lib.Xe_redshifts_no_inj_2d.append(Xe_redshifts_no_inj_ct)
-            specdist_ct_spectra_lib.DXe_Xe_2d.append((np.asarray(Xe_values_ct)-np.asarray(Xe_values_no_inj_ct))/np.asarray(Xe_values_no_inj_ct))
+
+            #print(np.asarray(Xe_redshifts_ct))
+            #print(np.asarray(Xe_values_ct))
+            DXe_Xe = []
+            DXe_Xe_redshifts = []
+            for (p,p_no_inj,z,z_no_inj) in zip(Xe_values_ct,Xe_values_no_inj_ct,Xe_redshifts_ct,Xe_redshifts_no_inj_ct):
+                DXe_Xe_p =[]
+                DXe_Xe_redshifts_p = []
+                #check if nan in any of the arrays:
+                Arrays_list = [np.asarray(p),
+                              np.asarray(p_no_inj),
+                              np.asarray(z),
+                              np.asarray(z_no_inj)]
+                has_nan = False
+                for array in Arrays_list:
+                    array_sum = np.sum(array)
+                    has_nan += np.isnan(array_sum)
+                if np.sum(has_nan):
+                    #print('filling with nans')
+                    DXe_Xe_p =  np.empty(len(p))
+                    DXe_Xe_p[:] = np.nan
+                    DXe_Xe_redshifts_p = np.empty(len(p))
+                    DXe_Xe_redshifts_p[:] = np.nan
+                else:
+                    f_Xe = interp1d(np.asarray(z), np.asarray(p))
+                    f_Xe_no_inj = interp1d(np.asarray(z_no_inj), np.asarray(p_no_inj))
+
+
+                    new_z_min  = max(np.min(np.asarray(z_no_inj)),np.min(np.asarray(z)))
+                    new_z_max  = min(np.max(np.asarray(z_no_inj)),np.max(np.asarray(z)))
+
+                    Nz = max(len(np.asarray(z)),len(np.asarray(z_no_inj)))
+                    new_z = np.logspace(np.log10(new_z_min),np.log10(new_z_max),Nz)
+
+                    new_Xe = f_Xe(new_z)
+                    new_Xe_no_inj = f_Xe_no_inj(new_z)
+                    DXe_Xe_p = (new_Xe - new_Xe_no_inj)/new_Xe_no_inj
+                    DXe_Xe_redshifts_p = new_z
+                DXe_Xe.append(DXe_Xe_p)
+                DXe_Xe_redshifts.append(DXe_Xe_redshifts_p)
+
+            specdist_ct_spectra_lib.DXe_Xe_2d.append(DXe_Xe)
+            specdist_ct_spectra_lib.DXe_Xe_redshifts_2d.append(DXe_Xe_redshifts)
+
+
+
 
 
 
@@ -595,7 +663,7 @@ def GetXeHistory(Gamma_inj_asked,x_inj_asked,z_asked,specdist_ct_spectra_lib,ome
         finj_2d = specdist_ct_spectra_lib.finj_2d
 
         DXe_Xe_2d = specdist_ct_spectra_lib.DXe_Xe_2d
-        Xe_redshifts_2d = specdist_ct_spectra_lib.Xe_redshifts_2d
+        Xe_redshifts_2d = specdist_ct_spectra_lib.DXe_Xe_redshifts_2d
 
         Gamma_values = specdist_ct_spectra_lib.Gamma_values
         x_inj_values =  specdist_ct_spectra_lib.x_inj_values
