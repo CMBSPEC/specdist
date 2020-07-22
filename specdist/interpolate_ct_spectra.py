@@ -115,6 +115,28 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['values'] = E2[:,1]
         specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['values'] = E3[:,1]
 
+    elif case=='quasistable_particle_210720':
+        specdist_ct_spectra_lib.case_id = "case_" + case
+        specdist_ct_spectra_lib.Gamma_inj_min = 1e-21
+        specdist_ct_spectra_lib.Gamma_inj_max = 1e-17
+        specdist_ct_spectra_lib.N_Gamma_inj = 10
+        specdist_ct_spectra_lib.Gamma_values = np.logspace(np.log10(specdist_ct_spectra_lib.Gamma_inj_min),np.log10(specdist_ct_spectra_lib.Gamma_inj_max),specdist_ct_spectra_lib.N_Gamma_inj)
+
+        specdist_ct_spectra_lib.x_inj_min = 1e-4
+        specdist_ct_spectra_lib.x_inj_max = 1e6
+        specdist_ct_spectra_lib.N_x_inj = 6
+        specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
+
+        E1 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_1.dat')
+        E2 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_2.dat')
+        E3 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_3.dat')
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['z'] = E1[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['z'] = E2[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['z'] = E3[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['values'] = E1[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['values'] = E2[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['values'] = E3[:,1]
+
     elif 'xe_history' in case:
         specdist_ct_spectra_lib.case_id = "case_" + case
         specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
@@ -131,7 +153,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         print('this case has not been computed. Computed cases are "lyc" or "bare".')
         return
     specdist_ct_spectra_lib.path_to_spectra  = path_to_ct_database + specdist_ct_spectra_lib.case_id
-    if 'xe_history' in case :
+    if 'xe_history' in case or 'quasistable_particle' in case:
         specdist_ct_spectra_lib.path_to_spectra  = path_to_ct_database + specdist_ct_spectra_lib.case_id + '/' + case
 
     if case == 'raw_lyc_reio':
@@ -150,7 +172,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         x_ct = []
         if case == 'mu_fit':
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_x_ct.txt'
-        elif 'xe_history' in case:
+        elif 'xe_history' in case or 'quasistable_particle' in case:
             filename = specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma + '_x_ct.txt'
         else:
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_x_ct.txt'
@@ -213,7 +235,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
                         DI_ct_hubble.append(DI_ct_p)
             for (p_bare,p_hubble) in zip(DI_ct_bare,DI_ct_hubble):
                 DI_ct.append(p_bare-p_hubble)
-        elif 'xe_history' in case:
+        elif 'xe_history' in case or 'quasistable_particle' in case:
             DI_ct_bare = []
             DI_ct_hubble = []
             filename = specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma  + '_DI_ct.txt'
@@ -273,7 +295,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
 
 
 
-        if 'xe_history' in case:
+        if 'xe_history' in case or 'quasistable_particle' in case:
             Xe_values_ct = []
             Xe_values_no_inj_ct = []
             Xe_redshifts_ct = []
@@ -352,7 +374,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         finj_ct = []
         if case == 'mu_fit':
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma +'/spectra_spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma  + '_finj_ct.txt'
-        elif 'xe_history' in case:
+        elif 'xe_history' in case or 'quasistable_particle' in case:
             filename = specdist_ct_spectra_lib.path_to_spectra + '_G_' + str_gamma + '/spectra_' + case + '_G_' + str_gamma  + '_finj_ct.txt'
         else:
             filename = specdist_ct_spectra_lib.path_to_spectra + '/spectra_' + specdist_ct_spectra_lib.case_id + '_G_' + str_gamma + '_finj_ct.txt'
@@ -376,7 +398,7 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.DI_2d.append(DI_ct)
         specdist_ct_spectra_lib.finj_2d.append(finj_ct)
 
-        if 'xe_history' in case:
+        if 'xe_history' in case or 'quasistable_particle' in case:
             specdist_ct_spectra_lib.Xe_values_2d.append(Xe_values_ct)
             specdist_ct_spectra_lib.Xe_values_no_inj_2d.append(Xe_values_no_inj_ct)
 
@@ -906,7 +928,7 @@ def GetXeHistory(Gamma_inj_asked,x_inj_asked,z_asked,specdist_ct_spectra_lib,ome
         sigma2 = 0.19
         sigma3 = 0.35
 
-        fdm_pca_lim = 2.*np.sqrt(rho1**2/sigma1**2+rho2**2/sigma2**2+rho3**2/sigma3**2)
+        fdm_pca_lim = 2.*1./np.sqrt(rho1**2/sigma1**2+rho2**2/sigma2**2+rho3**2/sigma3**2)
     else:
         fdm_pca_lim = 0.
 
