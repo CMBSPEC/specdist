@@ -94,6 +94,26 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['values'] = E2[:,1]
         specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['values'] = E3[:,1]
 
+    elif case == 'xe_history_270720':
+        specdist_ct_spectra_lib.case_id = "case_" + case
+        specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
+        specdist_ct_spectra_lib.Gamma_inj_max = np.logspace(-12,-17,10)[5:][0]
+        specdist_ct_spectra_lib.N_Gamma_inj = 5
+        specdist_ct_spectra_lib.Gamma_values = np.logspace(np.log10(specdist_ct_spectra_lib.Gamma_inj_min),np.log10(specdist_ct_spectra_lib.Gamma_inj_max),specdist_ct_spectra_lib.N_Gamma_inj)
+
+        specdist_ct_spectra_lib.x_inj_min = 1e-8
+        specdist_ct_spectra_lib.x_inj_max = 1e7
+        specdist_ct_spectra_lib.N_x_inj = 200
+        specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
+        E1 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_1.dat')
+        E2 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_2.dat')
+        E3 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_3.dat')
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['z'] = E1[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['z'] = E2[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['z'] = E3[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['values'] = E1[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['values'] = E2[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['values'] = E3[:,1]
     elif case == 'xe_history_200720_finj_fisher':
         specdist_ct_spectra_lib.case_id = "case_" + case
         specdist_ct_spectra_lib.Gamma_inj_min = 1e-17
