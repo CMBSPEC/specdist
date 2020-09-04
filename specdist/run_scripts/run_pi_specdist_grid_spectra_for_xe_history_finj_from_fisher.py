@@ -1,10 +1,10 @@
 import specdist as sd
 import numpy as np
 
-photon_injection_case = 'xe_history_200720_finj_fisher'
+photon_injection_case = 'extended_run_xe_history_010820'
 compute_hubble_dist = 'yes'
 
-finj_from_fisher = 'yes'
+finj_from_fisher = 'no'
 add_edges = 'yes'
 
 
@@ -55,12 +55,12 @@ ct.ct_reionisation_model = 1
 sd.set_dm_params_to_CT_pi_params(X_dm,ct)
 sd.set_cosmo_to_CT_cosmo_params(cosmo,ct)
 
-xi_array = np.logspace(np.log10(1e-8),np.log10(1e7),200)
+xi_array = np.logspace(np.log10(1e-8),np.log10(1e7),250)
 #xi_array = np.logspace(np.log10(1e-8),np.log10(1.e7),64)
 #xi_array = [1e-6]
 #Gamma_X = 1e-6 #np.logspace(-9,-6,4)
 #zi_array = [1.1e6,9.9e5]
-for Gamma_X in np.logspace(-12,-17,10)[9:]:
+for Gamma_X in np.logspace(-8,-20,75):
     str_gamma = str("%.3e"%Gamma_X)
 
     ct.ct_Gamma_dec = Gamma_X

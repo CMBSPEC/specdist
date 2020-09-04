@@ -9,6 +9,7 @@ from scipy import optimize
 from scipy.integrate import quad
 from scipy.interpolate import interp1d
 import math
+from numpy import linalg as LA
 
 
 def find_nearests(array, value):
@@ -112,4 +113,4 @@ z_y_era = 5e4
 z_reio_min = 6
 z_reio_max = 25
 z_recombination_min = 800
-z_recombination_max = 1500 
+z_recombination_max = 1500

@@ -6,6 +6,7 @@ from .pispec_functions import *
 from .interpolate_ct_spectra import *
 from .standard_mu_and_y_distortions import *
 from .firas_data import *
+from .edges_data import *
 from scipy.linalg import cholesky, LinAlgError
 from scipy.linalg import block_diag
 

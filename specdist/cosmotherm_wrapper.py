@@ -11,12 +11,15 @@ class cosmotherm:
         self.ct_npts = 3000
         self.ct_zstart = 5.e6
         self.ct_zend = 1e-2
+        self.ct_zlate = -1
         self.ct_Gamma_dec = 1e-9
         self.ct_verbose = 2
         self.ct_lyc = 0
         self.ct_evolve_Xe = 0
         self.ct_pi_redshift_evolution_mode = 0
         self.ct_pi_finj_mode = 0
+        self.ct_pi_stim = 0
+        self.ct_include_collisions = 0
         self.ct_include_pi = 1 #photon injection case
         self.ct_reionisation_model = 0
         self.ct_emission_absorption_mode = 0
@@ -138,6 +141,11 @@ class cosmotherm:
         return r_dict
 
     def run_cosmotherm_parallel(self,**args):
+        dict_for_fisher = args.get('dict_for_fisher')
+        sd_lib_for_fisher = args.get('sd_lib_for_fisher', None)
+        args['dict_for_fisher'] = dict_for_fisher
+        args['sd_lib_for_fisher'] = sd_lib_for_fisher
+
         self.create_tmp_dir_to_store_full_ct_outputs()
         startTime = datetime.now()
         pool = multiprocessing.Pool()
@@ -232,6 +240,10 @@ class cosmotherm:
         p_dict['addition to filename at end'] = '.tmp.dat'
         p_dict['N_eff'] = self.ct_N_eff
         p_dict['Yp'] = self.ct_Yp
+        p_dict['Omega_m'] = self.ct_Omega_m
+        p_dict['Omega_b'] = self.ct_Omega_b
+        p_dict['h100'] = self.ct_h
+        p_dict['T0'] = self.ct_T0
         p_dict['include photon injection from decaying particle'] = self.ct_include_pi
         if (p_dict['include photon injection from decaying particle'] == 1):
             self.root_name = '.photon_inj.'
@@ -246,6 +258,7 @@ class cosmotherm:
         p_dict['npts'] = self.ct_npts
         p_dict['zstart'] = self.ct_zstart
         p_dict['zend'] = self.ct_zend
+        p_dict['zlate'] = self.ct_zlate
         p_dict['verbosity level CosmoTherm'] = self.ct_verbose
         p_dict['photon injection Gamma_dec'] = self.ct_Gamma_dec
         p_dict['include Lyc absorption'] = self.ct_lyc
@@ -254,10 +267,65 @@ class cosmotherm:
         p_dict['photon injection redshift evolution'] = self.ct_pi_redshift_evolution_mode
         p_dict['photon injection finj mode'] = self.ct_pi_finj_mode
         p_dict['photon injection energy norm'] = self.ct_pi_energy_norm
+        p_dict['photon injection stimulated'] = self.ct_pi_stim
         p_dict['emission/absorption mode'] = self.ct_emission_absorption_mode
         p_dict['pi_f_dm'] = self.ct_fdm
         p_dict['pi_finj_from_fisher'] = self.ct_pi_finj_from_fisher
+        p_dict['include collisions'] = self.ct_include_collisions
         return p_dict
+
+    def compute_no_injection_spectrum_and_Xe_history(self,**kwargs):
+        r_dict = {}
+        self.ct_Drho_rho_dec = 1e-300
+
+        Nx_no_inj = kwargs.get('Nx_no_inj', 5e3)
+        Nz_no_inj = kwargs.get('Nz_no_inj', 5e3)
+        xmin = kwargs.get('xmin_no_inj', 1e-10)
+        xmax = kwargs.get('xmax_no_inj', 1e10)
+
+        R = self.run_cosmotherm_parallel(**kwargs)
+
+        f_DI_no_inj = interp1d(R[0]['x'],R[0]['DI'],bounds_error=False,fill_value=1e-300)
+
+        new_x = np.logspace(np.log10(xmin),np.log10(xmax),Nx_no_inj)
+        new_DI_no_inj = f_DI_no_inj(new_x)
+
+        r_dict['x'] = new_x
+        r_dict['DI'] = new_DI_no_inj
+
+        if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
+            f_Xe_no_inj = interp1d(R[0]['Xe_redshifts'],R[0]['Xe_values'],bounds_error=False,fill_value=1e-300)
+            new_Xe_redshifts_ct = np.logspace(np.log10(self.ct_zend),np.log10(self.ct_zstart),Nz_no_inj)
+            new_Xe_values_ct = f_Xe_no_inj(new_Xe_redshifts_ct)
+            r_dict['Xe_redshifts'] = new_Xe_redshifts_ct
+            r_dict['Xe_values'] = new_Xe_values_ct
+
+        if kwargs['save_spectra']=='yes':
+            with open(path_to_ct_spectra_results+'/'+self.save_dir_name + '/spectra_' + self.save_dir_name  + '_fine_grid_DI_ct.txt', 'w') as f:
+                f.write("# arrays of DI values for CT spectra\n")
+                for row in [new_DI_no_inj]:
+                    np.savetxt(f,[row],fmt="%.8e",delimiter='\t')
+            f.close()
+            with open(path_to_ct_spectra_results+'/'+self.save_dir_name + '/spectra_' + self.save_dir_name  + '_fine_grid_x_ct.txt', 'w') as f:
+                f.write("# arrays of x values for CT spectra\n")
+                for row in [new_x]:
+                    np.savetxt(f,[row],fmt="%.8e",delimiter='\t')
+            f.close()
+            if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
+                with open(path_to_ct_spectra_results+'/'+self.save_dir_name + '/spectra_' + self.save_dir_name  + '_fine_grid_Xe_redshifts_ct.txt', 'w') as f:
+                    f.write("# arrays of redshift values for free electron fraction Xe\n")
+                    for row in [new_Xe_redshifts_ct]:
+                        np.savetxt(f,[row],fmt="%.3e",delimiter='\t')
+                f.close()
+                with open(path_to_ct_spectra_results+'/'+self.save_dir_name + '/spectra_' + self.save_dir_name  + '_fine_grid_Xe_values_ct.txt', 'w') as f:
+                    f.write("# arrays of Xe values for free electron fraction Xe\n")
+                    for row in [new_Xe_values_ct]:
+                        np.savetxt(f,[row],fmt="%.8e",delimiter='\t')
+                f.close()
+        return r_dict
+
+
+
 
     def clear(self):
         subprocess.call(['rm','-rf',self.path_to_ct_tmp_dir])

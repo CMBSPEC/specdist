@@ -129,3 +129,6 @@ specdist/ct_spectra/*
 specdist/ct_spectra
 specdist/data/PCA_modes/Modes.zip
 *.txt
+
+# recfast outputs
+specdist/recfast_outputs
