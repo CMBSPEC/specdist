@@ -17,6 +17,7 @@ class cosmotherm:
         self.ct_lyc = 0
         self.ct_evolve_Xe = 0
         self.ct_pi_redshift_evolution_mode = 0
+        self.ct_only_global_energetics = 0
         self.ct_pi_finj_mode = 0
         self.ct_pi_stim = 0
         self.ct_include_collisions = 0
@@ -83,6 +84,21 @@ class cosmotherm:
                     for k,v in zip(l_dict_keys,l_dict_values):
                         l_dict[k]=float(v)
                 r_dict = {**r_dict, **l_dict}
+            elif (self.ct_only_global_energetics == 1):
+                R = np.loadtxt(p_dict['path for output']+'energetics.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                r_dict["z"] = R[:,0]
+                r_dict["(NX/Nxini)"] = R[:,10]
+                r_dict["(NX/Nxini)_stim"] = R[:,11]
+                r_dict["t_cosmic"] = R[:,13]
+                r_dict["t_stim"] = R[:,15]
+                if (self.ct_pi_stim == 0):
+                    r_dict["[(dlnRho/dln1pz)/(dRho/Rho)_inj]"] = R[:,16]/R[:,18][-1]
+                else:
+                    r_dict["[(dlnRho/dln1pz)/(dRho/Rho)_inj]"] = R[:,17]/R[:,18][-1]
+                Drho_rho = p_dict['photon injection Drho_rho_dec']
+                r_dict["finj"] = Drho_rho/R[:,18][-1]
+
+
             else:
                 R = np.loadtxt(p_dict['path for output']+'Dn.cooling'+self.root_name+'PDE_ODE.tmp.dat')
                 try:
@@ -269,6 +285,7 @@ class cosmotherm:
         p_dict['photon injection energy norm'] = self.ct_pi_energy_norm
         p_dict['photon injection stimulated'] = self.ct_pi_stim
         p_dict['emission/absorption mode'] = self.ct_emission_absorption_mode
+        p_dict['only solve global energetics'] = self.ct_only_global_energetics
         p_dict['pi_f_dm'] = self.ct_fdm
         p_dict['pi_finj_from_fisher'] = self.ct_pi_finj_from_fisher
         p_dict['include collisions'] = self.ct_include_collisions
