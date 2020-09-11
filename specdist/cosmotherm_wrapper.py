@@ -100,28 +100,45 @@ class cosmotherm:
 
 
             else:
-                R = np.loadtxt(p_dict['path for output']+'Dn.cooling'+self.root_name+'PDE_ODE.tmp.dat')
                 try:
-                    r_dict['x'] = R[:,0]
-                    r_dict['DI'] = R[:,5]
-                    if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
-                        R = np.loadtxt(p_dict['path for output']+'Xe_Xp_etc.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-                        r_dict['Xe_redshifts'] = R[:,0]
-                        r_dict['Xe_values'] = R[:,6]
-                    if self.ct_include_pi == 1:
-                        f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
-                        lines = f.readlines()
-                        for line in lines:
-                            if 'finj =' in line:
-                                for t in line.split():
-                                    try:
-                                        finj = float(line.split()[2])
-                                    except ValueError:
-                                        print('error for process %d, f_inj not found'%index_pval)
-                                        pass
-                        f.close()
-                        r_dict['finj'] = finj
-                except IndexError:
+                    R = np.loadtxt(p_dict['path for output']+'Dn.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                    try:
+                        r_dict['x'] = R[:,0]
+                        r_dict['DI'] = R[:,5]
+                        if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
+                            R = np.loadtxt(p_dict['path for output']+'Xe_Xp_etc.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                            r_dict['Xe_redshifts'] = R[:,0]
+                            r_dict['Xe_values'] = R[:,6]
+                            r_dict['Xe_values_X1s'] = R[:,1]
+                            r_dict['Xe_values_XHeI1s'] = R[:,3]
+                            r_dict['Xe_values_XHeII1s'] = R[:,4]
+                        if self.ct_include_pi == 1:
+                            f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                            lines = f.readlines()
+                            for line in lines:
+                                if 'finj =' in line:
+                                    for t in line.split():
+                                        try:
+                                            finj = float(line.split()[2])
+                                        except ValueError:
+                                            print('error for process %d, f_inj not found'%index_pval)
+                                            pass
+                            f.close()
+                            r_dict['finj'] = finj
+                    except IndexError:
+                        a = np.empty(1)
+                        a[:] = np.nan
+                        r_dict['x'] = a
+                        r_dict['DI'] = a
+                        if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
+                            r_dict['Xe_redshifts'] = a
+                            r_dict['Xe_values'] = a
+                            r_dict['Xe_values_X1s'] = a
+                            r_dict['Xe_values_XHeI1s'] = a
+                            r_dict['Xe_values_XHeII1s'] = a
+                        if self.ct_include_pi == 1:
+                            r_dict['finj'] = a[0]
+                except OSError:
                     a = np.empty(1)
                     a[:] = np.nan
                     r_dict['x'] = a
@@ -129,9 +146,11 @@ class cosmotherm:
                     if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
                         r_dict['Xe_redshifts'] = a
                         r_dict['Xe_values'] = a
+                        r_dict['Xe_values_X1s'] = a
+                        r_dict['Xe_values_XHeI1s'] = a
+                        r_dict['Xe_values_XHeII1s'] = a
                     if self.ct_include_pi == 1:
                         r_dict['finj'] = a[0]
-
         #print(r_dict)
         return r_dict
 

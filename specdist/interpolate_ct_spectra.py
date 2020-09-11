@@ -229,6 +229,34 @@ def load_ct_spectra_lib(case,specdist_ct_spectra_lib):
         specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['values'] = E2[:,1]
         specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['values'] = E3[:,1]
 
+
+
+    elif case == 'extended_run_xe_history_Drho_rho_3e-5_zlate_1e3_without_collision_20x20_stim_070920':
+        specdist_ct_spectra_lib.case_id = "case_" + case
+        specdist_ct_spectra_lib.Gamma_inj_min = 1e-30
+        specdist_ct_spectra_lib.Gamma_inj_max = 1e-8
+        specdist_ct_spectra_lib.N_Gamma_inj = 20
+
+
+        specdist_ct_spectra_lib.Gamma_values = np.logspace(-30,-8,20)
+
+        #specdist_ct_spectra_lib.Gamma_values = np.logspace(-8,-20,20)
+
+        specdist_ct_spectra_lib.x_inj_min = 1e-8
+        specdist_ct_spectra_lib.x_inj_max = 1e7
+        specdist_ct_spectra_lib.N_x_inj = 20
+        specdist_ct_spectra_lib.x_inj_values = np.logspace(np.log10(specdist_ct_spectra_lib.x_inj_min),np.log10(specdist_ct_spectra_lib.x_inj_max),specdist_ct_spectra_lib.N_x_inj)
+
+        E1 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_1.dat')
+        E2 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_2.dat')
+        E3 = np.loadtxt(path_to_ct_database+'../PCA_modes/Modes/mode_N121_so_planck_3.dat')
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['z'] = E1[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['z'] = E2[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['z'] = E3[:,0]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E1']['values'] = E1[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E2']['values'] = E2[:,1]
+        specdist_ct_spectra_lib.Xe_PCA_EigenModes['E3']['values'] = E3[:,1]
+
     elif case == 'extended_run_xe_history_Drho_rho_3e-5_zlate_1e3_without_collision_20x20_stim_190820':
         specdist_ct_spectra_lib.case_id = "case_" + case
         specdist_ct_spectra_lib.Gamma_inj_min = 1e-30
@@ -1421,8 +1449,8 @@ def GetXeHistory(Gamma_inj_asked,x_inj_asked,z_asked,specdist_ct_spectra_lib,ome
         array_Xe_no_inj = array_S_Xe_no_inj_result
     else:
         array_DXe_Xe = array_S_result*fdm_asked/fdm
-        array_Xe = array_S_Xe_result*fdm_asked/fdm
-        array_Xe_no_inj = array_S_Xe_no_inj_result*fdm_asked/fdm
+        array_Xe = array_S_Xe_result*fdm_asked/fdm # Not sure about this....
+        array_Xe_no_inj = array_S_Xe_no_inj_result*fdm_asked/fdm # Not sure about this....
 
     #print(fdm)
     if get_pca_constraint == 'yes':
