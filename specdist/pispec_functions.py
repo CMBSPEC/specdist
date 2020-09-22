@@ -2,6 +2,7 @@ from .utils import *
 from .cosmology import *
 from .cosmotherm_wrapper import *
 from .specdist_functions import *
+from .standard_mu_and_y_distortions import *
 
 
 #Particle mass in eV, m/1eV = 4.698*10^-4 x_inj
@@ -34,8 +35,23 @@ def injection_redshift_zX(gamma_inj,cosmo,cosmotherm):
     def f(lnz):
         z = np.exp(lnz)
         return gamma_inj*cosmo.t_H0_in_s()-cosmo.E(z)-cosmo.dE_dz(z)*(1.+z)
-    root = np.exp(optimize.brentq(f, np.log(cosmotherm.ct_zstart), np.log(cosmotherm.ct_zend)))
+    root = np.exp(optimize.brentq(f, np.log(1e14), np.log(cosmotherm.ct_zend)))
     return root
+
+
+# def injection_redshift_zX_stim(gamma_inj,xinj0,cosmo,cosmotherm):
+#     # set_cosmo_to_CT_cosmo_params(cosmo,cosmotherm)
+#
+#     def f(lnz):
+#         z = np.exp(lnz)
+#         xinj = xinj0/(1.+z)
+#         ninj = n_bb(xinj)
+#         # current expression not correct
+#         return gamma_inj*(1.+2.*ninj)*cosmo.t_H0_in_s()-cosmo.E(z)-cosmo.dE_dz(z)*(1.+z)
+#     root = np.exp(optimize.brentq(f, np.log(1e14), np.log(cosmotherm.ct_zend)))
+#     return root
+#
+
 
 def find_Gamma_inj_for_injection_redshift_zX(zX,cosmo,cosmotherm):
     def f(lng):
@@ -56,10 +72,11 @@ def high_redshift_f_dm_limit(mu_lim,cosmo,cosmotherm,dm_particle,*args,**kwargs)
     # return mu_lim
 
     dm_particle.f_dm = 1.
-    mui = mu_continuous_injection(cosmo,cosmotherm,dm_particle,N_int = N_int)['value']
+    mui = mu_continuous_injection(cosmo,cosmotherm,dm_particle,**kwargs)['value']
     #return mui-mu_lim
     #root = np.exp(optimize.brentq(f, np.log(1e-100), np.log(1e100)))
     return mu_lim/mui
+
 
 
 
@@ -107,12 +124,21 @@ def mu_continuous_injection(cosmo,cosmotherm,dm_particle,*args,**kwargs):
 
     #trapezoidal rule
     nz = int(N_int)
-    zend_gamma = cosmo.z_of_t(10.*1./dm_particle.Gamma_inj)
+    stim = kwargs.get('stim', 'no')
+    if stim == 'no':
+        zend_gamma = cosmo.z_of_t(10.*1./dm_particle.Gamma_inj)
+    if stim ==  'yes':
+        xinj0 = dm_particle.x_0
+        zend_gamma = z_of_t_stim(10.*1./dm_particle.Gamma_inj,xinj0,cosmo)
     zend = max(cosmo.z_end,zend_gamma)
     ln1pz_array = np.linspace((np.log(1.+cosmo.z_start)),(np.log(1.+zend)),nz)
+    #ln1pz_array = np.linspace((np.log(1.+1e14)),(np.log(1.+zend)),nz)
     Ip = []
     int_array_xp = []
-    a_args = (cosmo,dict)
+    #a_args = (cosmo,dict)
+    kwargs['cosmotherm']=cosmotherm
+    kwargs['dm_particle']=dm_particle
+    a_args = (cosmo,kwargs)
     for p in ln1pz_array:
         int_p = integrand(p,*a_args)
         int_array_xp.append(int_p)
@@ -208,8 +234,48 @@ def pi_entropy_production_history_dlnN_dt(z,cosmo,**kwargs):
     ct = kwargs['cosmotherm']
     X_dm = kwargs['dm_particle']
     delta_t = cosmo.t_of_z_in_s(z)['value'] - cosmo.t_of_z_in_s(cosmo.z_start)['value']
-    #note: this is *dependent* of x_inj
-    return f_inj(X_dm,cosmo)*X_dm.Gamma_inj*np.exp(-X_dm.Gamma_inj*delta_t)
+    stim = kwargs.get('stim', 'no')
+    if stim == 'no':
+        #note: this is *dependent* of x_inj
+        return f_inj(X_dm,cosmo)*X_dm.Gamma_inj*np.exp(-X_dm.Gamma_inj*delta_t)
+    if stim == 'yes':
+        xinj = x_inj(X_dm,z)
+        ninj = n_bb(xinj)
+        xinj0 = xinj*(1.+z)
+        delta_t_stim = t_stim_of_z_in_s(z,xinj0,cosmo)['value'] -  t_stim_of_z_in_s(cosmo.z_start,xinj0,cosmo)['value']
+        return f_inj(X_dm,cosmo)*X_dm.Gamma_inj*(1.+2.*ninj)*np.exp(-X_dm.Gamma_inj*delta_t_stim)
+
+
+
+def dt_stim_dz_of_z_in_s(z,xinj0,cosmo):
+    xinj = xinj0/(1.+z)
+    ninj = n_bb(xinj)
+    return -cosmo.t_H0_in_s()*1./cosmo.E(z)/(1.+z)*(1.+2.*ninj)
+
+def t_stim_of_z_in_s(z,xinj0,cosmo):
+    def integrand(ln1pz,cosmo):
+        zp = np.exp(ln1pz)-1.
+        dzdln1pz= 1.+zp
+        return dt_stim_dz_of_z_in_s(zp,xinj0,cosmo)*dzdln1pz
+    result =  quad(integrand,np.log(1.+1e14),np.log(1.+z), args=cosmo)
+    r_dict = {}
+    r_dict['value']=result[0]
+    r_dict['err'] = result[1]
+    return r_dict
+
+
+def z_of_t_stim(t,xinj0,cosmo):
+    if t<=t_stim_of_z_in_s(cosmo.z_start,xinj0,cosmo)['value']:
+        return cosmo.z_start
+    if t>=t_stim_of_z_in_s(cosmo.z_end,xinj0,cosmo)['value']:
+        return cosmo.z_end
+    def f(ln1pz):
+        z = np.exp(ln1pz)-1.
+        return t_stim_of_z_in_s(z,xinj0,cosmo)['value']-t
+    root = np.exp(optimize.brentq(f, np.log(1.+cosmo.z_start), np.log(1.+cosmo.z_end)))-1.
+    return root
+
+
 
 def get_fdm_from_mu_continuous_injection(mu_limit,cosmo,cosmotherm,dm_particle):
     dm_particle.f_dm = 1.

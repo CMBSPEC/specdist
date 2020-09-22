@@ -3,6 +3,7 @@ from .utils import *
 
 
 # note on units: 10^26 Jansky = 1 USI
+# Here fequency Nu is in Hz as constants are in USI
 
 #Black body spectrum (in MJy/sr)
 def B_nu_of_T(NU,T):
@@ -109,3 +110,27 @@ def DI_normalization_in_MJy_per_sr(x,cosmo):
     nu_in_Hz = nu_in_GHz_of_x(x,cosmo)*1e9
     norm_in_MJy_per_sr = 2.*hplanck*nu_in_Hz**3./clight**2.*1e20
     return norm_in_MJy_per_sr
+
+def n_bb(x):
+    if x < 1e-3:
+        return 1./(x*(1.+x/2.+x**2/6.))
+    else:
+        return (np.exp(x)-1.)**-1.
+
+
+def g_nu(nu_in_GHz,Tcmb=2.7255):
+    nu_in_Hz = nu_in_GHz*1e9
+    x = (hplanck*nu_in_Hz/kb/Tcmb)
+    return (x/np.tanh(x/2.)-4.)
+
+
+def Y_sz_nu_in_GHz(nu_in_GHz,Tcmb=2.7255):
+    nu_in_Hz = nu_in_GHz*1e9
+    x = (hplanck*nu_in_Hz/kb/Tcmb)
+    try:
+        result = G_bb(x)*(x*(np.exp(x)+1.)/(np.exp(x)-1.)-4.)
+    except RuntimeWarning:
+        result = 0.
+    if math.isnan(result):
+        result = 0.
+    return result

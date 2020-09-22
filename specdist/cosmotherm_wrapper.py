@@ -40,6 +40,7 @@ class cosmotherm:
 
         self.path_to_ct_param_file = path_to_cosmotherm + '/runfiles/'
         self.tmp_dir_name = 'tmp'
+        self.pi_use_zstart_from_total_energy_fraction ='no'
 
 
 
@@ -56,6 +57,47 @@ class cosmotherm:
     def compute_specdist(self,index_pval=0,**params_values_dict):
 
         p_dict = params_values_dict
+
+        # Photon Injection Specific:
+        # here check whether we require a starting redshift
+        # that depends on Gamma_inj in such way that the evolution
+        # is started when the injected energy is just a fraction of the full injected energy.
+        # In this  case, we first compute the total energetics
+        # then we look for the starting redshift by interpolation and root-finding
+
+        if (self.pi_use_zstart_from_total_energy_fraction ==  'yes'):
+            # only perform global energetics
+            p_dict['only solve global energetics'] = 1
+            # write parameter file
+            subprocess.call(['mkdir',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)])
+            p_dict['path for output'] = self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval) + '/'
+            with open(self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)+'/tmp.ini', 'w') as f:
+                for k, v in p_dict.items():
+                    f.write(str(k) + ' = '+ str(v) + '\n')
+            f.close()
+            # run cosmotherm
+            subprocess.call([path_to_cosmotherm+'/CosmoTherm',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)+'/tmp.ini'])
+            R = np.loadtxt(p_dict['path for output']+'energetics.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+            redshifts = R[:,0]
+            if (self.ct_pi_stim == 0):
+                relative_energy_integral = -R[:,16]/R[:,18][-1]
+            else:
+                relative_energy_integral = -R[:,17]/R[:,18][-1]
+            Int_rho = []
+            for zp in redshifts:
+                Int_rho.append(np.trapz(-relative_energy_integral[redshifts>zp],np.log(1.+redshifts[redshifts>zp])))
+            Int_rho = np.asarray(Int_rho)
+            f = interp1d(np.log(1.+redshifts),Int_rho)
+            def f_frac(ln1pz):
+                return f(ln1pz)-0.01
+            zinj_frac = np.exp(optimize.brentq(f_frac, np.log(1.+max(redshifts)), np.log(1.+min(redshifts))))-1.
+            p_dict['zstart'] = max(self.ct_zlate,zinj_frac)
+            # re-inititialise the parameters:
+            p_dict['only solve global energetics'] = 0
+            # remove the directory and move on:
+            subprocess.call(['rm','-rf',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)])
+
+
         subprocess.call(['mkdir',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)])
         p_dict['path for output'] = self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval) + '/'
         with open(self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)+'/tmp.ini', 'w') as f:
@@ -92,9 +134,9 @@ class cosmotherm:
                 r_dict["t_cosmic"] = R[:,13]
                 r_dict["t_stim"] = R[:,15]
                 if (self.ct_pi_stim == 0):
-                    r_dict["[(dlnRho/dln1pz)/(dRho/Rho)_inj]"] = R[:,16]/R[:,18][-1]
+                    r_dict["[(dlnRho/dln1pz)/(dRho/Rho)_inj]"] = -R[:,16]/R[:,18][-1]
                 else:
-                    r_dict["[(dlnRho/dln1pz)/(dRho/Rho)_inj]"] = R[:,17]/R[:,18][-1]
+                    r_dict["[(dlnRho/dln1pz)/(dRho/Rho)_inj]"] = -R[:,17]/R[:,18][-1]
                 Drho_rho = p_dict['photon injection Drho_rho_dec']
                 r_dict["finj"] = Drho_rho/R[:,18][-1]
 
