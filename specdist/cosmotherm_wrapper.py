@@ -92,6 +92,7 @@ class cosmotherm:
                 return f(ln1pz)-0.01
             zinj_frac = np.exp(optimize.brentq(f_frac, np.log(1.+max(redshifts)), np.log(1.+min(redshifts))))-1.
             p_dict['zstart'] = max(self.ct_zlate,zinj_frac)
+            print(' starting at z=%.2e'%p_dict['zstart'])
             # re-inititialise the parameters:
             p_dict['only solve global energetics'] = 0
             # remove the directory and move on:
