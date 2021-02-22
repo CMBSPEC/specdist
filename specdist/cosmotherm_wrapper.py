@@ -33,6 +33,7 @@ class cosmotherm:
         self.ct_Yp   = 0.24
         self.save_dir_name = 'tmp'
         self.save_Xe = 'no'
+        self.save_Te = 'no'
         self.ct_fdm = 0
         self.get_finj = 0
         self.ct_pi_energy_norm = 0
@@ -155,6 +156,11 @@ class cosmotherm:
                             r_dict['Xe_values_X1s'] = R[:,1]
                             r_dict['Xe_values_XHeI1s'] = R[:,3]
                             r_dict['Xe_values_XHeII1s'] = R[:,4]
+                        if self.save_Te == 'yes':
+                            R = np.loadtxt(p_dict['path for output']+'Temperatures.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                            r_dict['Te_redshifts'] = R[:,0]
+                            r_dict['Te_values'] = R[:,1]
+                            r_dict['Te_values_rf'] = R[:,1] # the electron temperature computed from recfast
                         if self.ct_include_pi == 1:
                             f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
                             lines = f.readlines()
