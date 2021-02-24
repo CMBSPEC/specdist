@@ -38,6 +38,8 @@ class recfast:
         self.rf_include_ambipolar_diffusion = 0
         self.rf_Paoletti_Finelli_Lorentz    = 0
 
+        self.rf_add_collisions = 0
+
         self.rf_alp_alp_ref       = 1.0
         self.rf_me_me_ref       = 1.0
         self.rf_power_for_1pz_a = 0.0
@@ -220,6 +222,7 @@ class recfast:
         p_dict['include correction function'] = self.rf_include_correction_function
 
         p_dict['Reionization model'] = self.rf_Reionization_model
+        p_dict['add collisions'] = self.rf_add_collisions
 
         p_dict['path for output'] = '/outputs/'
         p_dict['addition to name for output'] = '.tmp.dat'
@@ -228,8 +231,10 @@ class recfast:
             self.root_name = '.DM_decay_heating.Tr.'
         elif self.rf_include_correction_function == 1 and self.rf_Reionization_model == 0:
             self.root_name = '.DM_decay_heating.Rec_corrs_CT2010.Tr.'
-        elif self.rf_Reionization_model == 1:
+        elif self.rf_include_correction_function == 0 and self.rf_Reionization_model == 1:
             self.root_name = '.DM_decay_heating.Tr.reion_VP.'
+        elif self.rf_include_correction_function == 1 and self.rf_Reionization_model == 1:
+            self.root_name = '.DM_decay_heating.Rec_corrs_CT2010.Tr.reion_VP.'
         ##############
         return p_dict
 

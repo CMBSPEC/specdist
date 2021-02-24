@@ -18,7 +18,7 @@ subprocess.call(['mkdir','-p',path_to_ct_spectra_results])
 
 
 #the path to the Recfast binary file
-path_to_recfast = path_to_sd_projects + "Recfast++.vX"
+path_to_recfast = path_to_sd_projects + "recfast-.vX"
 
 #the path to save the output from cosmotherm
 path_to_recfast_results =  path_to_sd_projects + "specdist/specdist/recfast_outputs"
