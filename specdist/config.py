@@ -1,6 +1,6 @@
 import subprocess
 
-
+# This path needs to be adjsuted (TBD: set this automatically)
 path_to_sd_projects = "/Users/boris/Work/SPECTRAL-DISTORTIONS/"
 #path_to_sd_projects = "/scratch/nas_chluba/specdist/bolliet/cosmotherm_projects/"
 
