@@ -192,7 +192,8 @@ class recfast:
     def load_parameter_file(self):
         #load template parameter file into dictionnary
         p_dict = {}
-        with open(self.path_to_rf_param_file+"recfast-parameters.ini") as f:
+        with open(self.path_to_rf_param_file+"parameters-decay-Planck-PCA.ini") as f:
+        # with open(self.path_to_rf_param_file+"recfast-parameters.ini") as f:
             for line in f:
                 x = line.strip()
                 if x:
