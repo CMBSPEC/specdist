@@ -111,18 +111,59 @@ class recfast:
         r_dict = {**dict_param_values,**dict_rf_results}
         return r_dict
 
+
+    def compute_recfast_parallel_multi_params(self,index_pval,param_values_array,param_name,**kwargs):
+
+        # dict_for_fisher = kwargs.get('dict_for_fisher')
+        # sd_lib_for_fisher = kwargs.get('sd_lib_for_fisher', None)
+
+        p_val_1= param_values_array[0][index_pval]
+        p_val_2= param_values_array[1][index_pval]
+        param_name_1 = param_name[0]
+        param_name_2 = param_name[1]
+        params_values_dict = self.load_parameter_file()
+        params_values_dict[param_name_1] = p_val_1
+        params_values_dict[param_name_2] = p_val_2
+
+        # if float(params_values_dict['pi_f_dm']) != 0 and float(params_values_dict['photon injection f_dec']) == 0:
+        #     params_values_dict['photon injection f_dec'] = 1.3098e4*float(params_values_dict['pi_f_dm'])/float(params_values_dict['photon injection x_dec'])*(self.ct_omega_cdm/0.12)*(float(params_values_dict['T0'])/2.726)**-4
+        # if params_values_dict['pi_finj_from_fisher'] == 'yes':
+        #     f_dm_fisher = pi_run_fisher_constraints([float(params_values_dict['photon injection Gamma_dec'])],[float(params_values_dict['photon injection x_dec'])],sd_lib_for_fisher,**dict_for_fisher)
+        #     params_values_dict['photon injection f_dec'] = f_dm_fisher['curves'][0]['finj'][0]
+        #     print('finj_fisher = %e'%params_values_dict['photon injection f_dec'])
+        r_dict = self.compute_recfast(index_pval=index_pval,**params_values_dict)
+        dict_rf_results = r_dict
+        dict_param_values = {}
+        dict_param_values[param_name_1] = p_val_1
+        dict_param_values[param_name_2] = p_val_2
+        r_dict = {**dict_param_values,**dict_rf_results}
+        return r_dict
+
+
+
     def run_recfast_parallel(self,**args):
         self.create_tmp_dir_to_store_full_rf_outputs()
         startTime = datetime.now()
         pool = multiprocessing.Pool()
-        if type(args['param_values_array'])== float or type(args['param_values_array'])== int:
-            array_args = [args['param_values_array']]
-        else:
-            array_args = args['param_values_array']
+        if args['multi_params'] == 'no':
+            if type(args['param_values_array'])== float or type(args['param_values_array'])== int:
+                array_args = [args['param_values_array']]
+            else:
+                array_args = args['param_values_array']
+            fn=functools.partial(self.compute_recfast_parallel,param_values_array=array_args,param_name=args['param_name'])
+            results = pool.map(fn,range(np.size(np.asarray(args['param_values_array']))))
+        elif args['multi_params'] == 'yes':
+            # if type(args['param_values_array'])== float or type(args['param_values_array'])== int:
+            #     array_args = [args['param_values_array']]
+            # else:
+            #     array_args = args['param_values_array']
 
-        fn=functools.partial(self.compute_recfast_parallel,param_values_array=array_args,param_name=args['param_name'])
-        #print(len(*param_values_array))
-        results = pool.map(fn,range(np.size(np.asarray(args['param_values_array']))))
+            array_args = args['param_values_array']
+            fn=functools.partial(self.compute_recfast_parallel_multi_params,param_values_array=array_args,param_name=args['param_name'])
+            #print(len(*param_values_array))
+            # print(np.size(np.asarray(args['param_values_array'][0])))
+            # exit(0)
+            results = pool.map(fn,range(np.size(np.asarray(args['param_values_array'][0]))))
         pool.close()
         #self.clear()
         #if self.ct_pi_redshift_evolution_mode==0:
@@ -241,3 +282,254 @@ class recfast:
 
     def clear(self):
         subprocess.call(['rm','-rf',self.path_to_rf_tmp_dir])
+
+
+
+    def pi_run_pca_constraints_with_recfast(self,xinj_values,gammai_array,fdm,*args,**kwargs):
+        PCA_eigen_modes = kwargs['PCA_modes']
+        recfast = kwargs['recfast']
+        f_dm_pca = {}
+        f_dm_pca['curves'] = []
+        f_dm_pca['xinj'] = []
+
+        store_DXe_Xe = kwargs.get('store_DXe_Xe', 'no')
+
+
+        z1 = PCA_eigen_modes.Xe_PCA_EigenModes['E1']['z']
+        E1 = PCA_eigen_modes.Xe_PCA_EigenModes['E1']['values']
+        z2 = PCA_eigen_modes.Xe_PCA_EigenModes['E2']['z']
+        E2 = PCA_eigen_modes.Xe_PCA_EigenModes['E2']['values']
+        z3 = PCA_eigen_modes.Xe_PCA_EigenModes['E3']['z']
+        E3 = PCA_eigen_modes.Xe_PCA_EigenModes['E3']['values']
+
+        f_E1 = interp1d(z1, E1)
+        f_E2 = interp1d(z2, E2)
+        f_E3 = interp1d(z3, E3)
+
+
+        for xinj_asked in xinj_values:
+            xdec = xinj_asked
+            curves = {}
+            curves['Gamma_inj'] = gammai_array
+            if store_DXe_Xe == 'yes':
+                curves['DXe_Xe'] = []
+
+            #str_dir = str("%.3e"%xdec)
+
+            self.rf_xinj0 = xdec
+            self.rf_f_dec = fdm
+
+            args = {}
+
+            p_name = 'Gamma_dec'
+            p_array = gammai_array
+
+            args['param_values_array'] = p_array
+            args['param_name'] = p_name
+            args['save_recfast_results'] = 'no'
+            args['multi_params'] = 'no'
+            #rf.save_dir_name = 'case_' + '_xdec_' + str_dir
+            R = self.run_recfast_parallel(**args)
+
+
+            self.rf_f_dec = 1.e-300
+            #self.save_dir_name = 'case_no_inj' + '_xdec_' + str_dir
+            R_no_inj = self.run_recfast_parallel(**args)
+
+
+
+            fdm_pca_array = []
+            for k in range(len(R)):
+                DXe_Xe = (R[k]['Xe']-R_no_inj[k]['Xe'])/R_no_inj[k]['Xe']
+                z_Xe = R[k]['z']
+                f_DXe_Xe = interp1d(z_Xe,DXe_Xe)
+
+                min_z1 = max(np.min(z1),np.min(z_Xe))
+                max_z1 = min(np.max(z1),np.max(z_Xe))
+
+                min_z2 = max(np.min(z2),np.min(z_Xe))
+                max_z2 = min(np.max(z2),np.max(z_Xe))
+
+                min_z3 = max(np.min(z3),np.min(z_Xe))
+                max_z3 = min(np.max(z3),np.max(z_Xe))
+
+                new_z_min = max(min_z1,min_z2,min_z3)
+                new_z_max = min(max_z1,max_z2,max_z3)
+
+                new_z_min = 1e-5
+                new_z_max = 4e3
+                new_z = np.linspace(new_z_min,new_z_max,500)
+
+
+                new_z1 = new_z#np.linspace(min_z1,max_z1,5000)
+                new_z2 = new_z#np.linspace(min_z2,max_z2,5000)
+                new_z3 = new_z#np.linspace(min_z3,max_z3,5000)
+
+                zeta1 = f_DXe_Xe(new_z1)
+                zeta2 = f_DXe_Xe(new_z2)
+                zeta3 = f_DXe_Xe(new_z3)
+
+                integrand_rho1 = zeta1*f_E1(new_z1)
+                integrand_rho2 = zeta2*f_E2(new_z2)
+                integrand_rho3 = zeta3*f_E3(new_z3)
+
+
+
+                rho1 = np.trapz(integrand_rho1, x=new_z1)/fdm
+                rho2 = np.trapz(integrand_rho2, x=new_z2)/fdm
+                rho3 = np.trapz(integrand_rho3, x=new_z3)/fdm
+                #print(rho1,rho2,rho3)
+
+                sigma1 = 0.117996
+                sigma2 = 0.194069
+                sigma3 = 0.351996
+
+                fdm_pca_lim = 2.*1./np.sqrt(rho1**2/sigma1**2+rho2**2/sigma2**2+rho3**2/sigma3**2)
+                fdm_pca_array.append(fdm_pca_lim)
+                if store_DXe_Xe == 'yes':
+                    curves['DXe_Xe'].append([new_z,f_DXe_Xe(new_z)])
+
+
+            fdm_pca_array = np.asarray(fdm_pca_array)
+            curves['fdm'] = fdm_pca_array
+
+
+
+
+
+            f_dm_pca['xinj'].append(xdec)
+            f_dm_pca['curves'].append(curves)
+        return f_dm_pca
+
+
+
+
+    def pi_run_pca_constraints_with_recfast_iterative(self,xinj_values,gammai_array,fdmi_array,N_iter = 1,*args,**kwargs):
+        PCA_eigen_modes = kwargs['PCA_modes']
+        recfast = kwargs['recfast']
+        f_dm_pca = {}
+        f_dm_pca['curves'] = []
+        f_dm_pca['xinj'] = []
+
+        store_DXe_Xe = kwargs.get('store_DXe_Xe', 'no')
+
+
+        z1 = PCA_eigen_modes.Xe_PCA_EigenModes['E1']['z']
+        E1 = PCA_eigen_modes.Xe_PCA_EigenModes['E1']['values']
+        z2 = PCA_eigen_modes.Xe_PCA_EigenModes['E2']['z']
+        E2 = PCA_eigen_modes.Xe_PCA_EigenModes['E2']['values']
+        z3 = PCA_eigen_modes.Xe_PCA_EigenModes['E3']['z']
+        E3 = PCA_eigen_modes.Xe_PCA_EigenModes['E3']['values']
+
+        f_E1 = interp1d(z1, E1)
+        f_E2 = interp1d(z2, E2)
+        f_E3 = interp1d(z3, E3)
+
+
+
+
+        for id_iter in range(N_iter):
+            print('iter_id = ',id_iter)
+            print('initial fdms = ', fdmi_array)
+            for xinj_asked in xinj_values:
+                xdec = xinj_asked
+                curves = {}
+                curves['Gamma_inj'] = gammai_array
+                if store_DXe_Xe == 'yes':
+                    curves['DXe_Xe'] = []
+
+                #str_dir = str("%.3e"%xdec)
+
+                self.rf_xinj0 = xdec
+                self.rf_f_dec = fdmi_array[0]
+
+                args = {}
+
+                p_name_1 = 'Gamma_dec'
+                p_array_1 = gammai_array
+
+                p_name_2 = 'f_dec'
+                p_array_2 = fdmi_array
+
+                args['param_values_array'] = (p_array_1,p_array_2)
+                args['param_name'] = (p_name_1,p_name_2)
+                args['save_recfast_results'] = 'no'
+                args['multi_params'] = 'yes'
+                #rf.save_dir_name = 'case_' + '_xdec_' + str_dir
+                R = self.run_recfast_parallel(**args)
+
+                # only compute no injection case at first iteration
+                if id_iter == 0:
+                    args['param_name'] =  'Gamma_dec'
+                    args['param_values_array'] = gammai_array
+                    args['save_recfast_results'] = 'no'
+                    args['multi_params'] = 'no'
+                    self.rf_f_dec = 1.e-300
+                    #self.save_dir_name = 'case_no_inj' + '_xdec_' + str_dir
+                    R_no_inj = self.run_recfast_parallel(**args)
+
+
+
+                fdm_pca_array = []
+                for k in range(len(R)):
+                    DXe_Xe = (R[k]['Xe']-R_no_inj[k]['Xe'])/R_no_inj[k]['Xe']
+                    z_Xe = R[k]['z']
+                    f_DXe_Xe = interp1d(z_Xe,DXe_Xe)
+
+                    min_z1 = max(np.min(z1),np.min(z_Xe))
+                    max_z1 = min(np.max(z1),np.max(z_Xe))
+
+                    min_z2 = max(np.min(z2),np.min(z_Xe))
+                    max_z2 = min(np.max(z2),np.max(z_Xe))
+
+                    min_z3 = max(np.min(z3),np.min(z_Xe))
+                    max_z3 = min(np.max(z3),np.max(z_Xe))
+
+                    new_z_min = max(min_z1,min_z2,min_z3)
+                    new_z_max = min(max_z1,max_z2,max_z3)
+
+                    new_z_min = 1e-5
+                    new_z_max = 4e3
+                    new_z = np.linspace(new_z_min,new_z_max,500)
+
+
+                    new_z1 = new_z#np.linspace(min_z1,max_z1,5000)
+                    new_z2 = new_z#np.linspace(min_z2,max_z2,5000)
+                    new_z3 = new_z#np.linspace(min_z3,max_z3,5000)
+
+                    zeta1 = f_DXe_Xe(new_z1)
+                    zeta2 = f_DXe_Xe(new_z2)
+                    zeta3 = f_DXe_Xe(new_z3)
+
+                    integrand_rho1 = zeta1*f_E1(new_z1)
+                    integrand_rho2 = zeta2*f_E2(new_z2)
+                    integrand_rho3 = zeta3*f_E3(new_z3)
+
+
+
+                    rho1 = np.trapz(integrand_rho1, x=new_z1)/fdmi_array[k]
+                    rho2 = np.trapz(integrand_rho2, x=new_z2)/fdmi_array[k]
+                    rho3 = np.trapz(integrand_rho3, x=new_z3)/fdmi_array[k]
+                    #print(rho1,rho2,rho3)
+
+                    sigma1 = 0.117996
+                    sigma2 = 0.194069
+                    sigma3 = 0.351996
+
+                    fdm_pca_lim = 2.*1./np.sqrt(rho1**2/sigma1**2+rho2**2/sigma2**2+rho3**2/sigma3**2)
+                    fdm_pca_array.append(fdm_pca_lim)
+                    if store_DXe_Xe == 'yes':
+                        curves['DXe_Xe'].append([new_z,f_DXe_Xe(new_z)])
+
+
+                fdm_pca_array = np.asarray(fdm_pca_array)
+                curves['fdm'] = fdm_pca_array
+
+
+
+
+
+                f_dm_pca['xinj'].append(xdec)
+                f_dm_pca['curves'].append(curves)
+                fdmi_array = curves['fdm']
+        return f_dm_pca
