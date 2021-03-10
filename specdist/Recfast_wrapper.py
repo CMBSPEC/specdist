@@ -317,7 +317,7 @@ class recfast:
             #str_dir = str("%.3e"%xdec)
 
             self.rf_xinj0 = xdec
-            self.rf_f_dec = fdm
+
 
             args = {}
 
@@ -328,13 +328,15 @@ class recfast:
             args['param_name'] = p_name
             args['save_recfast_results'] = 'no'
             args['multi_params'] = 'no'
+            self.rf_f_dec = 1.e-300
+            #self.save_dir_name = 'case_no_inj' + '_xdec_' + str_dir
+            R_no_inj = self.run_recfast_parallel(**args)
+
+            self.rf_f_dec = fdm
             #rf.save_dir_name = 'case_' + '_xdec_' + str_dir
             R = self.run_recfast_parallel(**args)
 
 
-            self.rf_f_dec = 1.e-300
-            #self.save_dir_name = 'case_no_inj' + '_xdec_' + str_dir
-            R_no_inj = self.run_recfast_parallel(**args)
 
 
 
