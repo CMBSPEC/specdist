@@ -355,11 +355,14 @@ class recfast:
 
                 new_z_min = max(min_z1,min_z2,min_z3)
                 new_z_max = min(max_z1,max_z2,max_z3)
+                #
+                # new_z_min = self.rf_zend
+                # new_z_max = 4e3
+                # new_z = np.linspace(new_z_min,new_z_max,500)
 
-                new_z_min = 1e-5
-                new_z_max = 4e3
-                new_z = np.linspace(new_z_min,new_z_max,500)
-
+                new_z_min = 1.01*self.rf_zend
+                new_z_max = 0.99*4e3
+                new_z = np.geomspace(new_z_min,new_z_max,5000)
 
                 new_z1 = new_z#np.linspace(min_z1,max_z1,5000)
                 new_z2 = new_z#np.linspace(min_z2,max_z2,5000)
@@ -437,6 +440,7 @@ class recfast:
                 curves['Gamma_inj'] = gammai_array
                 if store_DXe_Xe == 'yes':
                     curves['DXe_Xe'] = []
+                    curves['Xe'] = []
 
                 #str_dir = str("%.3e"%xdec)
 
@@ -473,8 +477,10 @@ class recfast:
                 fdm_pca_array = []
                 for k in range(len(R)):
                     DXe_Xe = (R[k]['Xe']-R_no_inj[k]['Xe'])/R_no_inj[k]['Xe']
+                    Xe = R[k]['Xe']
                     z_Xe = R[k]['z']
                     f_DXe_Xe = interp1d(z_Xe,DXe_Xe)
+                    f_Xe = interp1d(z_Xe,Xe)
 
                     min_z1 = max(np.min(z1),np.min(z_Xe))
                     max_z1 = min(np.max(z1),np.max(z_Xe))
@@ -488,9 +494,9 @@ class recfast:
                     new_z_min = max(min_z1,min_z2,min_z3)
                     new_z_max = min(max_z1,max_z2,max_z3)
 
-                    new_z_min = 1e-5
-                    new_z_max = 4e3
-                    new_z = np.linspace(new_z_min,new_z_max,500)
+                    new_z_min = 1.01*self.rf_zend
+                    new_z_max = 0.99*4e3
+                    new_z = np.geomspace(new_z_min,new_z_max,5000)
 
 
                     new_z1 = new_z#np.linspace(min_z1,max_z1,5000)
@@ -520,6 +526,7 @@ class recfast:
                     fdm_pca_array.append(fdm_pca_lim)
                     if store_DXe_Xe == 'yes':
                         curves['DXe_Xe'].append([new_z,f_DXe_Xe(new_z)])
+                        curves['Xe'].append([new_z,f_Xe(new_z)])
 
 
                 fdm_pca_array = np.asarray(fdm_pca_array)
