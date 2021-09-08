@@ -135,3 +135,7 @@ specdist/recfast_outputs
 
 
 .ftpconfig
+specdist/notebooks/jens_data_xe_pca_fig/set-1.dat
+specdist/notebooks/jens_data_xe_pca_fig/set-2.dat
+specdist/notebooks/jens_data_xe_pca_fig/set-3.dat
+specdist/notebooks/temp/test_Hubble.dat
