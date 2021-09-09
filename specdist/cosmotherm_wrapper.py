@@ -13,7 +13,7 @@ class cosmotherm:
         self.ct_zend = 1e-2
         self.ct_zlate = -1
         self.ct_Gamma_dec = 1e-9
-        self.ct_verbose = 2
+        self.ct_verbose = 0
         self.ct_lyc = 0
         self.ct_evolve_Xe = 0
         self.ct_pi_redshift_evolution_mode = 0
@@ -38,11 +38,17 @@ class cosmotherm:
         self.get_finj = 0
         self.ct_pi_energy_norm = 0
         self.ct_pi_finj_from_fisher = 'no'
+        self.ct_solver_selection = 'PDE'
 
         self.path_to_ct_param_file = path_to_cosmotherm + '/runfiles/'
         self.tmp_dir_name = 'tmp'
         self.pi_use_zstart_from_total_energy_fraction ='no'
 
+
+        self.ct_z_X = 1.0e+14
+        self.ct_decay_include_Hubble_change = 1
+        self.ct_decay_Drho_rho_CMB = 3.0e-5
+        self.ct_heating_mode = 0
 
 
     def create_tmp_dir_to_store_full_ct_outputs(self):
@@ -144,25 +150,36 @@ class cosmotherm:
 
 
             else:
+                print('reading files')
                 try:
-                    R = np.loadtxt(p_dict['path for output']+'Dn.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                    if self.ct_heating_mode == 2:
+                        print('decay mode')
+                        # print('path:',p_dict['path for output']+self.ct_solver_selection+'/Dn.'+self.root_name+'tmp.dat')
+                        R = np.loadtxt(p_dict['path for output']+self.ct_solver_selection+'/Dn'+self.root_name+'tmp.dat')
+                        # print(R)
+                    else:
+                        R = np.loadtxt(p_dict['path for output']+self.ct_solver_selection+'/Dn.cooling'+self.root_name+'tmp.dat')
+
                     try:
                         r_dict['x'] = R[:,0]
                         r_dict['DI'] = R[:,5]
                         if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
-                            R = np.loadtxt(p_dict['path for output']+'Xe_Xp_etc.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                            if self.ct_heating_mode == 2:
+                                R = np.loadtxt(p_dict['path for output']+self.ct_solver_selection+'/Xe_Xp_etc'+self.root_name+'tmp.dat')
+                            else:
+                                R = np.loadtxt(p_dict['path for output']+self.ct_solver_selection+'/Xe_Xp_etc.cooling'+self.root_name+'tmp.dat')
                             r_dict['Xe_redshifts'] = R[:,0]
                             r_dict['Xe_values'] = R[:,6]
                             r_dict['Xe_values_X1s'] = R[:,1]
                             r_dict['Xe_values_XHeI1s'] = R[:,3]
                             r_dict['Xe_values_XHeII1s'] = R[:,4]
                         if self.save_Te == 'yes':
-                            R = np.loadtxt(p_dict['path for output']+'Temperatures.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                            R = np.loadtxt(p_dict['path for output']+self.ct_solver_selection+'/Temperatures.cooling'+self.root_name+'tmp.dat')
                             r_dict['Te_redshifts'] = R[:,0]
                             r_dict['Te_values'] = R[:,1]
                             r_dict['Te_values_rf'] = R[:,1] # the electron temperature computed from recfast
                         if self.ct_include_pi == 1:
-                            f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'PDE_ODE.tmp.dat')
+                            f = open(p_dict['path for output']+'/parameter_info.cooling'+self.root_name+'tmp.dat')
                             lines = f.readlines()
                             for line in lines:
                                 if 'finj =' in line:
@@ -207,10 +224,19 @@ class cosmotherm:
 
         dict_for_fisher = kwargs.get('dict_for_fisher')
         sd_lib_for_fisher = kwargs.get('sd_lib_for_fisher', None)
-
+        n_params = len(param_name)
         p_val = param_values_array[index_pval]
         params_values_dict = self.load_parameter_file()
-        params_values_dict[param_name] = p_val
+        # print(params_values_dict)
+        # exit(0)
+        if n_params>1:
+            for p in range(n_params):
+                p_name = param_name[p]
+                params_values_dict[p_name] = p_val[p]
+        else:
+            # print(p_val)
+            # exit(0)
+            params_values_dict[param_name[0]] = p_val
         if float(params_values_dict['pi_f_dm']) != 0 and float(params_values_dict['photon injection f_dec']) == 0:
             params_values_dict['photon injection f_dec'] = 1.3098e4*float(params_values_dict['pi_f_dm'])/float(params_values_dict['photon injection x_dec'])*(self.ct_omega_cdm/0.12)*(float(params_values_dict['T0'])/2.726)**-4
         if params_values_dict['pi_finj_from_fisher'] == 'yes':
@@ -220,7 +246,12 @@ class cosmotherm:
         r_dict = self.compute_specdist(index_pval=index_pval,**params_values_dict)
         dict_ct_results = r_dict
         dict_param_values = {}
-        dict_param_values[param_name] = p_val
+        if n_params>1:
+            for p in range(n_params):
+                p_name = param_name[p]
+                dict_param_values[p_name] = p_val[p]
+        else:
+            dict_param_values[param_name[0]] = p_val
         r_dict = {**dict_param_values,**dict_ct_results}
         return r_dict
 
@@ -232,16 +263,25 @@ class cosmotherm:
 
         self.create_tmp_dir_to_store_full_ct_outputs()
         startTime = datetime.now()
-        pool = multiprocessing.Pool()
-        if type(args['param_values_array'])== float or type(args['param_values_array'])== int:
-            array_args = [args['param_values_array']]
-        else:
-            array_args = args['param_values_array']
+        # pool = multiprocessing.Pool()
+        # if type(args['param_values_array'])== float or type(args['param_values_array'])== int:
+        #     array_args = [args['param_values_array']]
+        # else:
+        #     array_args = args['param_values_array']
+        #
+        # fn=functools.partial(self.compute_specdist_parallel,param_values_array=array_args,param_name=args['param_name'],dict_for_fisher=args['dict_for_fisher'],sd_lib_for_fisher=args['sd_lib_for_fisher'])
+        # #print(len(*param_values_array))
+        # results = pool.map(fn,range(np.size(np.asarray(args['param_values_array']))))
+        # pool.close()
 
-        fn=functools.partial(self.compute_specdist_parallel,param_values_array=array_args,param_name=args['param_name'],dict_for_fisher=args['dict_for_fisher'],sd_lib_for_fisher=args['sd_lib_for_fisher'])
-        #print(len(*param_values_array))
-        results = pool.map(fn,range(np.size(np.asarray(args['param_values_array']))))
+        fn=functools.partial(self.compute_specdist_parallel,
+                             param_values_array=args['param_values_array'],
+                             param_name=args['param_name'])
+        pool = multiprocessing.Pool()
+        results = pool.map(fn,range(int(np.size(np.asarray(args['param_values_array']))/len(args['param_name']))))
         pool.close()
+
+
         #self.clear()
         if self.ct_pi_redshift_evolution_mode==0:
             try:
@@ -310,7 +350,8 @@ class cosmotherm:
     def load_parameter_file(self):
         #load template parameter file into dictionnary
         p_dict = {}
-        with open(self.path_to_ct_param_file+"parameters.ini") as f:
+        # with open(self.path_to_ct_param_file+"parameters-photon-inj.ini") as f:
+        with open(self.path_to_ct_param_file+"parameters-decay.ini") as f:
             for line in f:
                 x = line.strip()
                 if x:
@@ -321,6 +362,7 @@ class cosmotherm:
         f.close()
 
         p_dict['path for output'] = '/outputs/'
+        p_dict['solver selection'] = self.ct_solver_selection
         p_dict['addition to filename at end'] = '.tmp.dat'
         p_dict['N_eff'] = self.ct_N_eff
         p_dict['Yp'] = self.ct_Yp
@@ -328,9 +370,12 @@ class cosmotherm:
         p_dict['Omega_b'] = self.ct_Omega_b
         p_dict['h100'] = self.ct_h
         p_dict['T0'] = self.ct_T0
+        p_dict['Heating mode'] = self.ct_heating_mode
         p_dict['include photon injection from decaying particle'] = self.ct_include_pi
         if (p_dict['include photon injection from decaying particle'] == 1):
             self.root_name = '.photon_inj.'
+        elif (p_dict['Heating mode'] == 2):
+            self.root_name = '.decay.'
         else:
             self.root_name = '.'
         # <!> mX_dec_in_eV must not be passed for x_dec to be read
@@ -357,6 +402,9 @@ class cosmotherm:
         p_dict['pi_f_dm'] = self.ct_fdm
         p_dict['pi_finj_from_fisher'] = self.ct_pi_finj_from_fisher
         p_dict['include collisions'] = self.ct_include_collisions
+        p_dict['z_X'] = self.ct_z_X
+        p_dict['decay: include Hubble change'] = self.ct_decay_include_Hubble_change
+        p_dict['decay: Drho/rho_CMB'] = self.ct_decay_Drho_rho_CMB
         return p_dict
 
     def compute_no_injection_spectrum_and_Xe_history(self,**kwargs):
