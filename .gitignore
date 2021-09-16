@@ -139,3 +139,5 @@ specdist/notebooks/jens_data_xe_pca_fig/set-1.dat
 specdist/notebooks/jens_data_xe_pca_fig/set-2.dat
 specdist/notebooks/jens_data_xe_pca_fig/set-3.dat
 specdist/notebooks/temp/test_Hubble.dat
+specdist/notebooks/sd_decay_training_set.npy
+specdist/notebooks/sd_decay_training_set_3000.npy

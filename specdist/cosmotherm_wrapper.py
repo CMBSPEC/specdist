@@ -22,6 +22,7 @@ class cosmotherm:
         self.ct_pi_stim = 0
         self.ct_include_collisions = 0
         self.ct_include_pi = 1 #photon injection case
+        self.ct_get_drho_rho_eff = 1 #photon injection case
         self.ct_reionisation_model = 0
         self.ct_emission_absorption_mode = 0
         self.ct_Omega_m = 0.26
@@ -191,6 +192,22 @@ class cosmotherm:
                                             pass
                             f.close()
                             r_dict['finj'] = finj
+                        if self.ct_get_drho_rho_eff == 1:
+                            try:
+                                f = open(p_dict['path for output']+'parameter_info'+self.root_name+'tmp.dat')
+                                lines = f.readlines()
+                                for line in lines:
+                                    if 'Drho_rho_inj=' in line:
+                                        for t in line.split():
+                                            try:
+                                                Drho_rho_inj = float(line.split()[1])
+                                            except ValueError:
+                                                print('error for process %d, f_inj not found'%index_pval)
+                                                pass
+                                f.close()
+                                r_dict['Drho_rho_inj'] = Drho_rho_inj
+                            except:
+                                r_dict['Drho_rho_inj'] = np.nan
                     except IndexError:
                         a = np.empty(1)
                         a[:] = np.nan
@@ -217,6 +234,22 @@ class cosmotherm:
                         r_dict['Xe_values_XHeII1s'] = a
                     if self.ct_include_pi == 1:
                         r_dict['finj'] = a[0]
+                    if self.ct_get_drho_rho_eff == 1:
+                        try:
+                            f = open(p_dict['path for output']+'parameter_info'+self.root_name+'tmp.dat')
+                            lines = f.readlines()
+                            for line in lines:
+                                if 'Drho_rho_inj=' in line:
+                                    for t in line.split():
+                                        try:
+                                            Drho_rho_inj = float(line.split()[1])
+                                        except ValueError:
+                                            print('error for process %d, f_inj not found'%index_pval)
+                                            pass
+                            f.close()
+                            r_dict['Drho_rho_inj'] = Drho_rho_inj
+                        except:
+                            r_dict['Drho_rho_inj'] = np.nan
         #print(r_dict)
         return r_dict
 
