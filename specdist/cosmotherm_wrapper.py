@@ -40,10 +40,13 @@ class cosmotherm:
         self.ct_pi_energy_norm = 0
         self.ct_pi_finj_from_fisher = 'no'
         self.ct_solver_selection = 'PDE'
+        self.ct_write_output = 0
 
         self.path_to_ct_param_file = path_to_cosmotherm + '/runfiles/'
         self.tmp_dir_name = 'tmp'
         self.pi_use_zstart_from_total_energy_fraction ='no'
+
+        self.decay_use_zstart_from_total_energy_fraction = 'no'
 
 
         self.ct_z_X = 1.0e+14
@@ -72,6 +75,35 @@ class cosmotherm:
         # is started when the injected energy is just a fraction of the full injected energy.
         # In this  case, we first compute the total energetics
         # then we look for the starting redshift by interpolation and root-finding
+        if (self.decay_use_zstart_from_total_energy_fraction ==  'yes'):
+            # only perform global energetics
+            p_dict['only solve global energetics'] = 1
+            # write parameter file
+            subprocess.call(['mkdir',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)])
+            p_dict['path for output'] = self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval) + '/'
+            with open(self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)+'/tmp.ini', 'w') as f:
+                for k, v in p_dict.items():
+                    f.write(str(k) + ' = '+ str(v) + '\n')
+            f.close()
+            # run cosmotherm
+            subprocess.call([path_to_cosmotherm+'/CosmoTherm',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)+'/tmp.ini'])
+            R = np.loadtxt(p_dict['path for output']+'energetics.large'+self.root_name+'tmp.dat')
+            redshifts = R[:,0]
+            relative_energy_integral = R[:,8]/R[:,8][-1]
+            Int_rho = []
+            # for zp in redshifts:
+            #     Int_rho.append(np.trapz(-relative_energy_integral[redshifts>zp],np.log(1.+redshifts[redshifts>zp])))
+            Int_rho = np.asarray(relative_energy_integral)
+            f = interp1d(np.log(1.+redshifts),Int_rho)
+            def f_frac(ln1pz):
+                return f(ln1pz)-0.01
+            zinj_frac = np.exp(optimize.brentq(f_frac, np.log(1.+max(redshifts)), np.log(1.+min(redshifts))))-1.
+            p_dict['zstart'] = max(self.ct_zlate,zinj_frac)
+            print(' starting at z=%.2e'%p_dict['zstart'])
+            # re-inititialise the parameters:
+            p_dict['only solve global energetics'] = 0
+            # remove the directory and move on:
+            subprocess.call(['rm','-rf',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)])
 
         if (self.pi_use_zstart_from_total_energy_fraction ==  'yes'):
             # only perform global energetics
@@ -396,6 +428,7 @@ class cosmotherm:
 
         p_dict['path for output'] = '/outputs/'
         p_dict['solver selection'] = self.ct_solver_selection
+        p_dict['write output'] = self.ct_write_output
         p_dict['addition to filename at end'] = '.tmp.dat'
         p_dict['N_eff'] = self.ct_N_eff
         p_dict['Yp'] = self.ct_Yp
