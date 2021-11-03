@@ -96,7 +96,7 @@ class cosmotherm:
             Int_rho = np.asarray(relative_energy_integral)
             f = interp1d(np.log(1.+redshifts),Int_rho)
             def f_frac(ln1pz):
-                return f(ln1pz)-0.01
+                return f(ln1pz)-0.001
             zinj_frac = np.exp(optimize.brentq(f_frac, np.log(1.+max(redshifts)), np.log(1.+min(redshifts))))-1.
             p_dict['zstart'] = max(self.ct_zlate,zinj_frac)
             print(' starting at z=%.2e'%p_dict['zstart'])
