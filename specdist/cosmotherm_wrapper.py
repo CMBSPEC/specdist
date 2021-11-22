@@ -218,6 +218,7 @@ class cosmotherm:
                     if self.ct_include_pi == 1:
                         r_dict['finj'] = a[0]
         #print(r_dict)
+        subprocess.call(['rm','-rf',self.path_to_ct_tmp_dir+'/tmp_'+str(index_pval)])
         return r_dict
 
     def compute_specdist_parallel(self,index_pval,param_values_array,param_name,**kwargs):
