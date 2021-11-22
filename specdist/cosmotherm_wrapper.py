@@ -197,6 +197,7 @@ class cosmotherm:
                     try:
                         r_dict['x'] = R[:,0]
                         r_dict['DI'] = R[:,5]
+                        r_dict['z_start'] = p_dict['zstart']
                         if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
                             if self.ct_heating_mode == 2:
                                 R = np.loadtxt(p_dict['path for output']+self.ct_solver_selection+'/Xe_Xp_etc'+self.root_name+'tmp.dat')
@@ -246,6 +247,7 @@ class cosmotherm:
                         a[:] = np.nan
                         r_dict['x'] = a
                         r_dict['DI'] = a
+                        r_dict['z_start'] = a
                         if self.save_Xe == 'yes' and self.ct_evolve_Xe != 0 :
                             r_dict['Xe_redshifts'] = a
                             r_dict['Xe_values'] = a
